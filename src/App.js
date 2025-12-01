@@ -1,23 +1,25 @@
-import logo from './logo.svg';
+import React from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import PatientQuestionnaire from './PatientQuestionnaire';
+import PhysicianQuestionnaire from './PhysicianQuestionnaire';
+import Selection from './Selection';
 import './App.css';
 
 function App() {
+  const location = useLocation();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {location.pathname !== '/' && (
+        <nav>
+          <Link to="/" className="back-to-selection">← Back to Selection</Link>
+        </nav>
+      )}
+      <Routes>
+        <Route path="/" element={<Selection />} />
+        <Route path="/patient" element={<PatientQuestionnaire />} />
+        <Route path="/physician" element={<PhysicianQuestionnaire />} />
+      </Routes>
     </div>
   );
 }
