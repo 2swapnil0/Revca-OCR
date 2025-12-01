@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Questionnaire.css';
 
 const PhysicianQuestionnaire = () => {
+  const [photos, setPhotos] = useState({});
+  const [slides, setSlides] = useState({});
+
+  const handleFileChange = (e, site) => {
+    if (e.target.files && e.target.files[0]) {
+      setPhotos(prevPhotos => ({
+        ...prevPhotos,
+        [site]: e.target.files[0]
+      }));
+    }
+  };
+
+  const handleSlideChange = (e, site) => {
+    if (e.target.files && e.target.files[0]) {
+      setSlides(prevSlides => ({
+        ...prevSlides,
+        [site]: e.target.files[0]
+      }));
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission logic here
@@ -95,23 +116,46 @@ const PhysicianQuestionnaire = () => {
         <div className="form-group">
           <label>Photographs (with size measuring function):</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Site 1" />
-            <input type="text" placeholder="Site 2" />
-            <input type="text" placeholder="Site 3" />
-            <input type="text" placeholder="Site 4" />
-            <input type="text" placeholder="Site 5" />
-            <input type="text" placeholder="Site 6" />
+            {[1, 2, 3, 4, 5, 6].map(site => (
+              <div key={site} className="file-input-container">
+                <label htmlFor={`photo-site-${site}`}>Site {site}:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  id={`photo-site-${site}`}
+                  onChange={(e) => handleFileChange(e, `site${site}`)}
+                  className="file-input"
+                />
+                {photos[`site${site}`] && (
+                  <div className="file-item">
+                    {photos[`site${site}`].name}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
         <div className="form-group">
           <label>Histopathological Slides (uploaded from optrascan):</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Site 1" />
-            <input type="text" placeholder="Site 2" />
-            <input type="text" placeholder="Site 3" />
-            <input type="text" placeholder="Site 4" />
-            <input type="text" placeholder="Site 5" />
-            <input type="text" placeholder="Site 6" />
+            {[1, 2, 3, 4, 5, 6].map(site => (
+              <div key={site} className="file-input-container">
+                <label htmlFor={`slide-site-${site}`}>Site {site}:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id={`slide-site-${site}`}
+                  onChange={(e) => handleSlideChange(e, `site${site}`)}
+                  className="file-input"
+                />
+                {slides[`site${site}`] && (
+                  <div className="file-item">
+                    {slides[`site${site}`].name}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
         <div className="form-group">

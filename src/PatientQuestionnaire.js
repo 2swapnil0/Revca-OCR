@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Questionnaire.css';
 
 const PatientQuestionnaire = () => {
+  const [photos, setPhotos] = useState({});
+
+  const handleFileChange = (e, site) => {
+    if (e.target.files && e.target.files[0]) {
+      setPhotos(prevPhotos => ({
+        ...prevPhotos,
+        [site]: e.target.files[0]
+      }));
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission logic here
@@ -298,12 +309,24 @@ const PatientQuestionnaire = () => {
         <div className="form-group">
           <label>Photographs:</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Site 1" />
-            <input type="text" placeholder="Site 2" />
-            <input type="text" placeholder="Site 3" />
-            <input type="text" placeholder="Site 4" />
-            <input type="text" placeholder="Site 5" />
-            <input type="text" placeholder="Site 6" />
+            {[1, 2, 3, 4, 5, 6].map(site => (
+              <div key={site} className="file-input-container">
+                <label htmlFor={`photo-site-${site}`}>Site {site}:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  id={`photo-site-${site}`}
+                  onChange={(e) => handleFileChange(e, `site${site}`)}
+                  className="file-input"
+                />
+                {photos[`site${site}`] && (
+                  <div className="file-item">
+                    {photos[`site${site}`].name}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 

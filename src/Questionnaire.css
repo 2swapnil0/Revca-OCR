@@ -191,3 +191,32 @@
   background-color: #c0392b;
   transform: translateY(-2px);
 }
+
+.file-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+.file-list {
+  margin-top: 1rem;
+}
+
+.file-item {
+  background-color: #f9f9f9;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--dark-color);
+}
+
+.file-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
