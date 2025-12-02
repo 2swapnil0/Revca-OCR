@@ -6,7 +6,7 @@ import Loader from './Loader';
 
 const PatientQuestionnaire = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [dialog, setDialog] = useState({ isOpen: true, message: '', isError: false });
+  const [dialog, setDialog] = useState({ isOpen: false, message: '', isError: false });
   const [formData, setFormData] = useState({
     patient_identification_number: '',
     email: '',
@@ -222,18 +222,98 @@ const PatientQuestionnaire = () => {
   const renderDialog = () => {
     if (!dialog.isOpen) return null;
 
+    const overlayStyle = {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000
+    };
+
+    const containerStyle = {
+      background: 'white',
+      padding: '2rem',
+      borderRadius: '8px',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      width: '90%',
+      maxWidth: '500px'
+    };
+
+    const headerStyle = {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottom: '1px solid #eee',
+      paddingBottom: '1rem',
+      marginBottom: '1rem'
+    };
+
+    const headerTitleStyle = {
+      margin: 0,
+      fontSize: '1.5rem',
+      color: dialog.isError ? '#e74c3c' : '#2ecc71'
+    };
+
+    const closeButtonStyle = {
+      background: 'none',
+      border: 'none',
+      fontSize: '1.5rem',
+      cursor: 'pointer',
+      color: '#2c3e50'
+    };
+
+    const contentStyle = {
+      marginBottom: '1.5rem'
+    };
+
+    const footerStyle = {
+      display: 'flex',
+      justifyContent: 'flex-end'
+    };
+
+    const confirmButtonStyle = {
+      padding: '0.8rem 1.5rem',
+      backgroundColor: '#3498db',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '1rem',
+      fontWeight: 600
+    };
+
     return (
-      <div className="dialog-overlay">
-        <div className={`dialog-container ${dialog.isError ? 'error' : 'success'}`}>
-          <div className="dialog-header">
-            <h3>{dialog.isError ? 'Error' : 'Success'}</h3>
-            <button className="close-button" onClick={() => setDialog({ isOpen: false, message: '', isError: false })}>×</button>
+      <div style={overlayStyle} className="dialog-overlay">
+        <div 
+          style={containerStyle} 
+          className={`dialog-container ${dialog.isError ? 'error' : 'success'}`}
+        >
+          <div style={headerStyle} className="dialog-header">
+            <h3 style={headerTitleStyle}>{dialog.isError ? 'Error' : 'Success'}</h3>
+            <button 
+              style={closeButtonStyle} 
+              className="close-button" 
+              onClick={() => setDialog({ isOpen: false, message: '', isError: false })}
+            >
+              ×
+            </button>
           </div>
-          <div className="dialog-content">
+          <div style={contentStyle} className="dialog-content">
             <p>{dialog.message}</p>
           </div>
-          <div className="dialog-footer">
-            <button className="confirm-button" onClick={() => setDialog({ isOpen: false, message: '', isError: false })}>OK</button>
+          <div style={footerStyle} className="dialog-footer">
+            <button 
+              style={confirmButtonStyle} 
+              className="confirm-button" 
+              onClick={() => setDialog({ isOpen: false, message: '', isError: false })}
+            >
+              OK
+            </button>
           </div>
         </div>
       </div>
