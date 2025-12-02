@@ -2,8 +2,23 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Questionnaire.css';
 import FileUploadPopup from './FileUploadPopup';
+import { API_BASE_URL } from './config';
 
 const PhysicianQuestionnaire = () => {
+  const [formData, setFormData] = useState({
+    patient_identification_number: '',
+    comorbidities: '',
+    oropharyngeal_lesion_info: '',
+    laterality: '',
+    size_in_mm: '',
+    clinical_examination_findings: '',
+    tnm_staging: '',
+    histological_type: '',
+    grade: '',
+    molecular_genetic_analysis: '',
+    photo_biopsy_site_unique_identifier: '',
+    follow_up_details: '',
+  });
   const [photos, setPhotos] = useState({});
   const [slides, setSlides] = useState({});
   const [activePhotoPopup, setActivePhotoPopup] = useState(null);
@@ -57,10 +72,50 @@ const PhysicianQuestionnaire = () => {
     setActiveSlidePopup(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    alert('Form submitted successfully!');
+    const postData = new FormData();
+
+    Object.keys(formData).forEach(key => {
+      postData.append(key, formData[key]);
+    });
+
+    Object.keys(photos).forEach(key => {
+      postData.append(`photo_${key}`, photos[key]);
+    });
+
+    Object.keys(slides).forEach(key => {
+      postData.append(`slide_${key}`, slides[key]);
+    });
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/physician-questionnaire/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+        body: postData,
+      });
+
+      if (response.ok) {
+        alert('Form submitted successfully!');
+      } else {
+        alert('Form submission failed');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('An error occurred during form submission');
+    }
   };
 
   return (
@@ -76,54 +131,54 @@ const PhysicianQuestionnaire = () => {
         <div className="section-header">Patient Information</div>
         <div className="form-group">
           <label>Patient Identification Number:</label>
-          <input type="text" />
+          <input type="text" name="patient_identification_number" value={formData.patient_identification_number} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Comorbidities:</label>
-          <textarea placeholder="List any relevant comorbidities..." />
+          <textarea name="comorbidities" placeholder="List any relevant comorbidities..." value={formData.comorbidities} onChange={handleChange} />
         </div>
 
         {/* Clinical Assessment Section */}
         <div className="section-header">Clinical Assessment</div>
         <div className="form-group">
           <label>Oropharyngeal Lesion Information:</label>
-          <input type="text" placeholder="Describe lesion locations and characteristics" />
+          <input type="text" name="oropharyngeal_lesion_info" placeholder="Describe lesion locations and characteristics" value={formData.oropharyngeal_lesion_info} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Laterality:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="left" name="laterality" value="left" />
+              <input type="radio" id="left" name="laterality" value="left" onChange={handleChange} />
               <label htmlFor="left">Left</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="right" name="laterality" value="right" />
+              <input type="radio" id="right" name="laterality" value="right" onChange={handleChange} />
               <label htmlFor="right">Right</label>
             </div>
           </div>
         </div>
         <div className="form-group">
           <label>Size (greatest dimension in mm):</label>
-          <input type="text" placeholder="Enter size in mm" />
+          <input type="text" name="size_in_mm" placeholder="Enter size in mm" value={formData.size_in_mm} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Clinical Examination Findings:</label>
-          <textarea placeholder="Detailed clinical findings..." />
+          <textarea name="clinical_examination_findings" placeholder="Detailed clinical findings..." value={formData.clinical_examination_findings} onChange={handleChange} />
         </div>
 
         {/* Diagnostic Information Section */}
         <div className="section-header">Diagnostic Information</div>
         <div className="form-group">
           <label>Staging: TNM</label>
-          <input type="text" placeholder="Enter TNM staging" />
+          <input type="text" name="tnm_staging" placeholder="Enter TNM staging" value={formData.tnm_staging} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Histological Type:</label>
-          <input type="text" placeholder="Enter histological type" />
+          <input type="text" name="histological_type" placeholder="Enter histological type" value={formData.histological_type} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Grade:</label>
-          <select>
+          <select name="grade" value={formData.grade} onChange={handleChange}>
             <option value="">-- Select Grade --</option>
             <option value="well">Well differentiated</option>
             <option value="moderate">Moderately differentiated</option>
@@ -134,11 +189,11 @@ const PhysicianQuestionnaire = () => {
           <label>Molecular Genetic Analysis:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="genetic_yes" name="genetic_analysis" value="yes" />
+              <input type="radio" id="genetic_yes" name="molecular_genetic_analysis" value="yes" onChange={handleChange} />
               <label htmlFor="genetic_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="genetic_no" name="genetic_analysis" value="no" />
+              <input type="radio" id="genetic_no" name="molecular_genetic_analysis" value="no" onChange={handleChange} />
               <label htmlFor="genetic_no">No</label>
             </div>
           </div>
@@ -208,14 +263,14 @@ const PhysicianQuestionnaire = () => {
         </div>
         <div className="form-group">
           <label>Photograph/Biopsy Site Unique Identifier:</label>
-          <input type="text" placeholder="Enter unique identifier" />
+          <input type="text" name="photo_biopsy_site_unique_identifier" placeholder="Enter unique identifier" value={formData.photo_biopsy_site_unique_identifier} onChange={handleChange} />
         </div>
 
         {/* Follow-up Section */}
         <div className="section-header">Follow-up Information</div>
         <div className="form-group">
           <label>Follow-up Details:</label>
-          <textarea placeholder="Enter follow-up plan and details..." />
+          <textarea name="follow_up_details" placeholder="Enter follow-up plan and details..." value={formData.follow_up_details} onChange={handleChange} />
         </div>
 
         {/* Submit Button */}

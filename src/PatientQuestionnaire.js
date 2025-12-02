@@ -1,8 +1,43 @@
 import React, { useState } from 'react';
 import './Questionnaire.css';
 import FileUploadPopup from './FileUploadPopup';
+import { API_BASE_URL } from './config';
 
 const PatientQuestionnaire = () => {
+  const [formData, setFormData] = useState({
+    patient_identification_number: '',
+    age: '',
+    gender: '',
+    ethnicity: '',
+    education_level: '',
+    occupation: '',
+    smartphone_owner: '',
+    cancer_awareness: '',
+    family_history_oral_cancer: '',
+    smoking_status: '',
+    years_of_smoking: '',
+    packs_per_day: '',
+    years_since_stopping: '',
+    alcohol_consumption: '',
+    tobacco_chewing_frequency: '',
+    tobacco_chewing_duration: '',
+    betel_nut_chewing_frequency: '',
+    betel_nut_chewing_duration: '',
+    gutkha_chewing_frequency: '',
+    gutkha_chewing_duration: '',
+    betel_quid_chewing_frequency: '',
+    betel_quid_chewing_duration: '',
+    mishri_use_frequency: '',
+    mishri_use_duration: '',
+    symptoms_lumps: '',
+    symptoms_soreness: '',
+    symptoms_pain_swallowing: '',
+    symptoms_difficulty_swallowing: '',
+    symptoms_difficulty_moving_tongue: '',
+    symptoms_difficulty_opening_jaw: '',
+    symptoms_white_patches: '',
+    duration_of_symptoms: '',
+  });
   const [photos, setPhotos] = useState({});
   const [activePhotoPopup, setActivePhotoPopup] = useState(null);
 
@@ -30,10 +65,41 @@ const PatientQuestionnaire = () => {
     setActivePhotoPopup(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    alert('Form submitted successfully!');
+    const postData = new FormData();
+    
+    Object.keys(formData).forEach(key => {
+      postData.append(key, formData[key]);
+    });
+
+    Object.keys(photos).forEach(key => {
+      postData.append(key, photos[key]);
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/patient-questionnaire/`, {
+        method: 'POST',
+        body: postData,
+      });
+
+      if (response.ok) {
+        alert('Form submitted successfully!');
+      } else {
+        alert('Form submission failed');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('An error occurred during form submission');
+    }
   };
 
   return (
@@ -44,21 +110,21 @@ const PatientQuestionnaire = () => {
         <div className="section-header">Personal Information</div>
         <div className="form-group">
           <label>Patient Identification Number:</label>
-          <input type="text" />
+          <input type="text" name="patient_identification_number" value={formData.patient_identification_number} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Age:</label>
-          <input type="text" placeholder="Enter your age" />
+          <input type="text" name="age" placeholder="Enter your age" value={formData.age} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Gender:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="male" name="gender" value="male" />
+              <input type="radio" id="male" name="gender" value="male" onChange={handleChange} />
               <label htmlFor="male">Male</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="female" name="gender" value="female" />
+              <input type="radio" id="female" name="gender" value="female" onChange={handleChange} />
               <label htmlFor="female">Female</label>
             </div>
           </div>
@@ -67,19 +133,19 @@ const PatientQuestionnaire = () => {
           <label>Ethnicity:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="indian" name="ethnicity" value="indian" />
+              <input type="radio" id="indian" name="ethnicity" value="indian" onChange={handleChange} />
               <label htmlFor="indian">Indian</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="other_ethnicity" name="ethnicity" value="other" />
+              <input type="radio" id="other_ethnicity" name="ethnicity" value="other" onChange={handleChange} />
               <label htmlFor="other_ethnicity">Other:</label>
-              <input type="text" placeholder="Please specify" />
+              <input type="text" name="ethnicity_other" placeholder="Please specify" onChange={handleChange} />
             </div>
           </div>
         </div>
         <div className="form-group">
           <label>Highest level of education completed:</label>
-          <select>
+          <select name="education_level" value={formData.education_level} onChange={handleChange}>
             <option value="">-- Select Education Level --</option>
             <option value="primary">Primary school (5-12 years)</option>
             <option value="middle">Middle school (12-14 years)</option>
@@ -91,17 +157,17 @@ const PatientQuestionnaire = () => {
         </div>
         <div className="form-group">
           <label>Current or previous occupation:</label>
-          <input type="text" placeholder="Enter your occupation" />
+          <input type="text" name="occupation" placeholder="Enter your occupation" value={formData.occupation} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Do you own a smartphone?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="smartphone_yes" name="smartphone" value="yes" />
+              <input type="radio" id="smartphone_yes" name="smartphone_owner" value="yes" onChange={handleChange} />
               <label htmlFor="smartphone_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="smartphone_no" name="smartphone" value="no" />
+              <input type="radio" id="smartphone_no" name="smartphone_owner" value="no" onChange={handleChange} />
               <label htmlFor="smartphone_no">No</label>
             </div>
           </div>
@@ -113,11 +179,11 @@ const PatientQuestionnaire = () => {
           <label>Can chewing betel nut / areca nut / supari cause cancer?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="cancer_awareness_yes" name="cancer_awareness" value="yes" />
+              <input type="radio" id="cancer_awareness_yes" name="cancer_awareness" value="yes" onChange={handleChange} />
               <label htmlFor="cancer_awareness_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="cancer_awareness_no" name="cancer_awareness" value="no" />
+              <input type="radio" id="cancer_awareness_no" name="cancer_awareness" value="no" onChange={handleChange} />
               <label htmlFor="cancer_awareness_no">No</label>
             </div>
           </div>
@@ -126,11 +192,11 @@ const PatientQuestionnaire = () => {
           <label>Family history of oral cavity cancer?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="family_history_yes" name="family_history" value="yes" />
+              <input type="radio" id="family_history_yes" name="family_history_oral_cancer" value="yes" onChange={handleChange} />
               <label htmlFor="family_history_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="family_history_no" name="family_history" value="no" />
+              <input type="radio" id="family_history_no" name="family_history_oral_cancer" value="no" onChange={handleChange} />
               <label htmlFor="family_history_no">No</label>
             </div>
           </div>
@@ -142,15 +208,15 @@ const PatientQuestionnaire = () => {
           <label>Smoking Status:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="smoker" name="smoking_status" value="smoker" />
+              <input type="radio" id="smoker" name="smoking_status" value="smoker" onChange={handleChange} />
               <label htmlFor="smoker">Smoker</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="ex_smoker" name="smoking_status" value="ex-smoker" />
+              <input type="radio" id="ex_smoker" name="smoking_status" value="ex-smoker" onChange={handleChange} />
               <label htmlFor="ex_smoker">Ex-smoker</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="never_smoked" name="smoking_status" value="never" />
+              <input type="radio" id="never_smoked" name="smoking_status" value="never" onChange={handleChange} />
               <label htmlFor="never_smoked">Never smoked</label>
             </div>
           </div>
@@ -160,21 +226,21 @@ const PatientQuestionnaire = () => {
           <div className="multi-input-group">
             <div>
               <label>Years of smoking:</label>
-              <input type="text" placeholder="Number of years" />
+              <input type="text" name="years_of_smoking" placeholder="Number of years" value={formData.years_of_smoking} onChange={handleChange} />
             </div>
             <div>
               <label>Packs per day:</label>
-              <input type="text" placeholder="Number of packs" />
+              <input type="text" name="packs_per_day" placeholder="Number of packs" value={formData.packs_per_day} onChange={handleChange} />
             </div>
             <div>
               <label>If ex-smoker, years since stopping:</label>
-              <input type="text" placeholder="Number of years" />
+              <input type="text" name="years_since_stopping" placeholder="Number of years" value={formData.years_since_stopping} onChange={handleChange} />
             </div>
           </div>
         </div>
         <div className="form-group">
           <label>Alcohol Consumption:</label>
-          <input type="text" placeholder="Estimate units per week" />
+          <input type="text" name="alcohol_consumption" placeholder="Estimate units per week" value={formData.alcohol_consumption} onChange={handleChange} />
         </div>
 
         {/* Oral Habits Section */}
@@ -182,36 +248,36 @@ const PatientQuestionnaire = () => {
         <div className="form-group">
           <label>Tobacco chewing:</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Frequency" />
-            <input type="text" placeholder="Duration" />
+            <input type="text" name="tobacco_chewing_frequency" placeholder="Frequency" value={formData.tobacco_chewing_frequency} onChange={handleChange} />
+            <input type="text" name="tobacco_chewing_duration" placeholder="Duration" value={formData.tobacco_chewing_duration} onChange={handleChange} />
           </div>
         </div>
         <div className="form-group">
           <label>Betel nut (supari) chewing:</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Frequency" />
-            <input type="text" placeholder="Duration" />
+            <input type="text" name="betel_nut_chewing_frequency" placeholder="Frequency" value={formData.betel_nut_chewing_frequency} onChange={handleChange} />
+            <input type="text" name="betel_nut_chewing_duration" placeholder="Duration" value={formData.betel_nut_chewing_duration} onChange={handleChange} />
           </div>
         </div>
         <div className="form-group">
           <label>Gutkha chewing:</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Frequency" />
-            <input type="text" placeholder="Duration" />
+            <input type="text" name="gutkha_chewing_frequency" placeholder="Frequency" value={formData.gutkha_chewing_frequency} onChange={handleChange} />
+            <input type="text" name="gutkha_chewing_duration" placeholder="Duration" value={formData.gutkha_chewing_duration} onChange={handleChange} />
           </div>
         </div>
         <div className="form-group">
           <label>Betel quid chewing:</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Frequency" />
-            <input type="text" placeholder="Duration" />
+            <input type="text" name="betel_quid_chewing_frequency" placeholder="Frequency" value={formData.betel_quid_chewing_frequency} onChange={handleChange} />
+            <input type="text" name="betel_quid_chewing_duration" placeholder="Duration" value={formData.betel_quid_chewing_duration} onChange={handleChange} />
           </div>
         </div>
         <div className="form-group">
           <label>Mishri use:</label>
           <div className="multi-input-group">
-            <input type="text" placeholder="Frequency" />
-            <input type="text" placeholder="Duration" />
+            <input type="text" name="mishri_use_frequency" placeholder="Frequency" value={formData.mishri_use_frequency} onChange={handleChange} />
+            <input type="text" name="mishri_use_duration" placeholder="Duration" value={formData.mishri_use_duration} onChange={handleChange} />
           </div>
         </div>
 
@@ -221,11 +287,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any lumps, lesions or ulcers in the mouth or throat which are not healing?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms1_yes" name="symptoms1" value="yes" />
+              <input type="radio" id="symptoms1_yes" name="symptoms_lumps" value="yes" onChange={handleChange} />
               <label htmlFor="symptoms1_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms1_no" name="symptoms1" value="no" />
+              <input type="radio" id="symptoms1_no" name="symptoms_lumps" value="no" onChange={handleChange} />
               <label htmlFor="symptoms1_no">No</label>
             </div>
           </div>
@@ -234,11 +300,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any soreness or pain in your mouth or throat?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms2_yes" name="symptoms2" value="yes" />
+              <input type="radio" id="symptoms2_yes" name="symptoms_soreness" value="yes" onChange={handleChange} />
               <label htmlFor="symptoms2_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms2_no" name="symptoms2" value="no" />
+              <input type="radio" id="symptoms2_no" name="symptoms_soreness" value="no" onChange={handleChange} />
               <label htmlFor="symptoms2_no">No</label>
             </div>
           </div>
@@ -247,11 +313,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any pain when you swallow?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms3_yes" name="symptoms3" value="yes" />
+              <input type="radio" id="symptoms3_yes" name="symptoms_pain_swallowing" value="yes" onChange={handleChange} />
               <label htmlFor="symptoms3_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms3_no" name="symptoms3" value="no" />
+              <input type="radio" id="symptoms3_no" name="symptoms_pain_swallowing" value="no" onChange={handleChange} />
               <label htmlFor="symptoms3_no">No</label>
             </div>
           </div>
@@ -260,11 +326,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any difficulty swallowing?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms4_yes" name="symptoms4" value="yes" />
+              <input type="radio" id="symptoms4_yes" name="symptoms_difficulty_swallowing" value="yes" onChange={handleChange} />
               <label htmlFor="symptoms4_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms4_no" name="symptoms4" value="no" />
+              <input type="radio" id="symptoms4_no" name="symptoms_difficulty_swallowing" value="no" onChange={handleChange} />
               <label htmlFor="symptoms4_no">No</label>
             </div>
           </div>
@@ -273,11 +339,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any difficulty moving your tongue?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms5_yes" name="symptoms5" value="yes" />
+              <input type="radio" id="symptoms5_yes" name="symptoms_difficulty_moving_tongue" value="yes" onChange={handleChange} />
               <label htmlFor="symptoms5_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms5_no" name="symptoms5" value="no" />
+              <input type="radio" id="symptoms5_no" name="symptoms_difficulty_moving_tongue" value="no" onChange={handleChange} />
               <label htmlFor="symptoms5_no">No</label>
             </div>
           </div>
@@ -286,11 +352,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any difficulty opening or moving your jaw?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms6_yes" name="symptoms6" value="yes" />
+              <input type="radio" id="symptoms6_yes" name="symptoms_difficulty_opening_jaw" value="yes" onChange={handleChange} />
               <label htmlFor="symptoms6_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms6_no" name="symptoms6" value="no" />
+              <input type="radio" id="symptoms6_no" name="symptoms_difficulty_opening_jaw" value="no" onChange={handleChange} />
               <label htmlFor="symptoms6_no">No</label>
             </div>
           </div>
@@ -299,18 +365,18 @@ const PatientQuestionnaire = () => {
           <label>Do you have any white patches inside your mouth?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms7_yes" name="symptoms7" value="yes" />
+              <input type="radio" id="symptoms7_yes" name="symptoms_white_patches" value="yes" onChange={handleChange} />
               <label htmlFor="symptoms7_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms7_no" name="symptoms7" value="no" />
+              <input type="radio" id="symptoms7_no" name="symptoms_white_patches" value="no" onChange={handleChange} />
               <label htmlFor="symptoms7_no">No</label>
             </div>
           </div>
         </div>
         <div className="form-group">
           <label>Duration of symptoms:</label>
-          <select>
+          <select name="duration_of_symptoms" value={formData.duration_of_symptoms} onChange={handleChange}>
             <option value="">-- Select Duration --</option>
             <option value="less_than_2_weeks">Less than 2 weeks</option>
             <option value="2_weeks_to_3_months">2 weeks – 3 months</option>

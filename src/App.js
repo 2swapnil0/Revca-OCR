@@ -1,24 +1,54 @@
 import React from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import PatientQuestionnaire from './PatientQuestionnaire';
 import PhysicianQuestionnaire from './PhysicianQuestionnaire';
 import Selection from './Selection';
+import Login from './Login';
 import './App.css';
+
+const PrivateRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated');
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
 
 function App() {
   const location = useLocation();
+  const isAuthenticated = localStorage.getItem('isAuthenticated');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('token');
+    navigate('/');
+  };
 
   return (
     <div className="App">
-      {location.pathname !== '/' && (
-        <nav>
-          <Link to="/" className="back-to-selection">← Back to Selection</Link>
+      {(location.pathname === '/physician' || (isAuthenticated && location.pathname === '/patient')) && (
+        <nav className="main-nav">
+          {location.pathname === '/physician' && (
+            <Link to="/" className="back-to-selection">← Back to Selection</Link>
+          )}
+          {isAuthenticated && location.pathname === '/patient' && (
+            <Link to="/physician" className="back-to-selection">← Back to Physician Details</Link>
+          )}
+          {isAuthenticated && (
+            <button onClick={handleLogout} className="logout-button">Logout</button>
+          )}
         </nav>
       )}
       <Routes>
         <Route path="/" element={<Selection />} />
         <Route path="/patient" element={<PatientQuestionnaire />} />
-        <Route path="/physician" element={<PhysicianQuestionnaire />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/physician"
+          element={
+            <PrivateRoute>
+              <PhysicianQuestionnaire />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </div>
   );
