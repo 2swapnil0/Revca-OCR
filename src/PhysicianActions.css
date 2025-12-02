@@ -34,20 +34,378 @@
 .action-button:hover {
   background-color: #0056b3;
 }
+
+/* Patient List Styles */
 .patient-list-container {
   margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .patient-list-container h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+  font-size: 1.8rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+.patient-profiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.patient-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.patient-profile:hover {
+  transform: translateY(-5px);
+  background-color: #f5f5f5;
+}
+
+.patient-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.patient-email {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #333;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Patient Details Styles */
+.patient-details-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.patient-details-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+}
+
+.patient-details-header h2 {
+  margin: 0;
+  flex-grow: 1;
+  text-align: center;
+  color: #333;
+}
+
+.back-button {
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #e0e0e0;
+}
+
+.patient-details-content {
+  padding: 1rem;
+}
+
+.patient-profile-large {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.patient-avatar-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
   margin-bottom: 1rem;
 }
 
-.patient-list-container ul {
-  list-style-type: none;
-  padding: 0;
+.patient-email-large {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 1rem;
 }
 
-.patient-list-container li {
-  padding: 0.5rem;
-  border-bottom: 1px solid #eee;
+.add-prescription-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
+}
+
+.add-prescription-button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.patient-details-section {
+  margin-bottom: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.patient-details-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #007bff;
+  font-size: 1.3rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: #555;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.detail-value {
+  color: #333;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .patient-profiles {
+    gap: 1rem;
+  }
+  
+  .patient-profile {
+    width: 100px;
+  }
+  
+  .patient-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+  
+  .patient-email {
+    font-size: 0.8rem;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .patient-details-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .back-button {
+    align-self: flex-start;
+  }
+}
+
+/* Prescription Form Styles */
+.prescription-form-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.prescription-form {
+  padding: 1rem;
+}
+
+.prescription-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.prescription-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.prescription-form input[type="text"],
+.prescription-form input[type="number"],
+.prescription-form select,
+.prescription-form textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.prescription-form input[type="text"]:focus,
+.prescription-form input[type="number"]:focus,
+.prescription-form select:focus,
+.prescription-form textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.prescription-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.prescription-form .checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.prescription-form .checkbox-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.prescription-form .form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.prescription-form .submit-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.prescription-form .submit-button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+}
+
+.prescription-form .cancel-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.prescription-form .cancel-button:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+  .patient-profiles {
+    justify-content: space-between;
+  }
+  
+  .patient-profile {
+    width: 80px;
+  }
+  
+  .patient-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .patient-email {
+    font-size: 0.7rem;
+  }
+  
+  .patient-avatar-large {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+  }
+  
+  .patient-details-section {
+    padding: 1rem;
+  }
+  
+  .prescription-form .form-actions {
+    flex-direction: column;
+  }
+  
+  .prescription-form .submit-button,
+  .prescription-form .cancel-button {
+    width: 100%;
+  }
+  
+  .add-prescription-button {
+    width: 100%;
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
 }
