@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import PatientQuestionnaire from './PatientQuestionnaire';
 import PhysicianQuestionnaire from './PhysicianQuestionnaire';
-import Selection from './Selection';
 import Login from './Login';
 import './App.css';
 
@@ -19,16 +18,13 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('token');
-    navigate('/');
+    navigate('/login');
   };
 
   return (
     <div className="App">
       {(location.pathname === '/physician' || (isAuthenticated && location.pathname === '/patient')) && (
         <nav className="main-nav">
-          {location.pathname === '/physician' && (
-            <Link to="/" className="back-to-selection">← Back to Selection</Link>
-          )}
           {isAuthenticated && location.pathname === '/patient' && (
             <Link to="/physician" className="back-to-selection">← Back to Physician Details</Link>
           )}
@@ -38,7 +34,7 @@ function App() {
         </nav>
       )}
       <Routes>
-        <Route path="/" element={<Selection />} />
+        <Route path="/" element={<Navigate to="/patient" />} />
         <Route path="/patient" element={<PatientQuestionnaire />} />
         <Route path="/login" element={<Login />} />
         <Route
