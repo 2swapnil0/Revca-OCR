@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import './Questionnaire.css';
 import FileUploadPopup from './FileUploadPopup';
 import { API_BASE_URL } from './config';
+import Loader from './Loader';
 
 const PatientQuestionnaire = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [dialog, setDialog] = useState({ isOpen: false, message: '', isError: false });
   const [formData, setFormData] = useState({
     patient_identification_number: '',
     email: '',
@@ -20,16 +23,21 @@ const PatientQuestionnaire = () => {
     packs_per_day: '',
     years_since_stopping: '',
     alcohol_consumption: '',
-    tobacco_chewing_frequency: '',
-    tobacco_chewing_duration: '',
-    betel_nut_chewing_frequency: '',
-    betel_nut_chewing_duration: '',
-    gutkha_chewing_frequency: '',
-    gutkha_chewing_duration: '',
-    betel_quid_chewing_frequency: '',
-    betel_quid_chewing_duration: '',
-    mishri_use_frequency: '',
-    mishri_use_duration: '',
+    tobacco_chewing_status: '',
+    tobacco_chewing_times_per_day: '',
+    tobacco_chewing_duration_years: '',
+    betel_nut_chewing_status: '',
+    betel_nut_chewing_times_per_day: '',
+    betel_nut_chewing_duration_years: '',
+    gutkha_chewing_status: '',
+    gutkha_chewing_times_per_day: '',
+    gutkha_chewing_duration_years: '',
+    betel_quid_chewing_status: '',
+    betel_quid_chewing_times_per_day: '',
+    betel_quid_chewing_duration_years: '',
+    mishri_use_status: '',
+    mishri_use_times_per_day: '',
+    mishri_use_duration_years: '',
     symptoms_lumps: '',
     symptoms_soreness: '',
     symptoms_pain_swallowing: '',
@@ -76,6 +84,7 @@ const PatientQuestionnaire = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     const dataToSend = { ...formData };
 
@@ -100,21 +109,99 @@ const PatientQuestionnaire = () => {
       });
 
       if (response.ok) {
-        alert('Form submitted successfully!');
+        setDialog({ isOpen: true, message: 'Form submitted successfully!', isError: false });
         // TODO: Implement photo upload logic here. This might require a separate API call.
       } else {
         const errorData = await response.json();
         console.error('Form submission failed:', errorData);
-        alert(`Form submission failed: ${JSON.stringify(errorData)}`);
+        setDialog({ isOpen: true, message: `Form submission failed: ${JSON.stringify(errorData)}`, isError: true });
       }
     } catch (error) {
       console.error('Form submission error:', error);
-      alert('An error occurred during form submission');
+      setDialog({ isOpen: true, message: 'An error occurred during form submission', isError: true });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const renderOralHabit = (habitName, label) => {
+    const status = formData[`${habitName}_status`];
+    const timesPerDay = formData[`${habitName}_times_per_day`];
+    const durationYears = formData[`${habitName}_duration_years`];
+
+    return (
+      <div className="form-group">
+        <label>{label}</label>
+        <div className="radio-group">
+          {['daily', 'weekly', 'ex_user', 'never'].map(option => (
+            <div className="radio-option" key={option}>
+              <input
+                type="radio"
+                id={`${habitName}_${option}`}
+                name={`${habitName}_status`}
+                value={option}
+                checked={status === option}
+                onChange={handleChange}
+              />
+              <label htmlFor={`${habitName}_${option}`}>{option.charAt(0).toUpperCase() + option.slice(1).replace('_', ' ')}</label>
+            </div>
+          ))}
+        </div>
+        {(status === 'daily' || status === 'weekly' || status === 'ex_user') && (
+          <div className="multi-input-group">
+            {status === 'daily' && (
+              <div>
+                <label>Times per day:</label>
+                <input
+                  type="text"
+                  name={`${habitName}_times_per_day`}
+                  placeholder="e.g., 5"
+                  value={timesPerDay}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
+            <div>
+              <label>Duration (years):</label>
+              <input
+                type="text"
+                name={`${habitName}_duration_years`}
+                placeholder="e.g., 10"
+                value={durationYears}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderDialog = () => {
+    if (!dialog.isOpen) return null;
+
+    return (
+      <div className="dialog-overlay">
+        <div className={`dialog-container ${dialog.isError ? 'error' : 'success'}`}>
+          <div className="dialog-header">
+            <h3>{dialog.isError ? 'Error' : 'Success'}</h3>
+            <button className="close-button" onClick={() => setDialog({ isOpen: false, message: '', isError: false })}>×</button>
+          </div>
+          <div className="dialog-content">
+            <p>{dialog.message}</p>
+          </div>
+          <div className="dialog-footer">
+            <button className="confirm-button" onClick={() => setDialog({ isOpen: false, message: '', isError: false })}>OK</button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="questionnaire-container">
+      {isLoading && <Loader />}
+      {renderDialog()}
       <h1>Patient Questionnaire</h1>
       <form onSubmit={handleSubmit} className="mobile-friendly-form">
         {/* Personal Information Section */}
@@ -236,23 +323,25 @@ const PatientQuestionnaire = () => {
             </div>
           </div>
         </div>
-        <div className="form-group">
-          <label>If smoker or ex-smoker:</label>
-          <div className="multi-input-group">
-            <div>
-              <label>Years of smoking:</label>
-              <input type="text" name="years_of_smoking" placeholder="Number of years" value={formData.years_of_smoking} onChange={handleChange} />
-            </div>
-            <div>
-              <label>Packs per day:</label>
-              <input type="text" name="packs_per_day" placeholder="Number of packs" value={formData.packs_per_day} onChange={handleChange} />
-            </div>
-            <div>
-              <label>If ex-smoker, years since stopping:</label>
-              <input type="text" name="years_since_stopping" placeholder="Number of years" value={formData.years_since_stopping} onChange={handleChange} />
+        {(formData.smoking_status === 'smoker' || formData.smoking_status === 'ex-smoker') && (
+          <div className="form-group">
+            <label>If smoker or ex-smoker:</label>
+            <div className="multi-input-group">
+              <div>
+                <label>Years of smoking:</label>
+                <input type="text" name="years_of_smoking" placeholder="Number of years" value={formData.years_of_smoking} onChange={handleChange} />
+              </div>
+              <div>
+                <label>Packs per day:</label>
+                <input type="text" name="packs_per_day" placeholder="Number of packs" value={formData.packs_per_day} onChange={handleChange} />
+              </div>
+              <div>
+                <label>If ex-smoker, years since stopping:</label>
+                <input type="text" name="years_since_stopping" placeholder="Number of years" value={formData.years_since_stopping} onChange={handleChange} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
         <div className="form-group">
           <label>Alcohol Consumption:</label>
           <input type="text" name="alcohol_consumption" placeholder="Estimate units per week" value={formData.alcohol_consumption} onChange={handleChange} />
@@ -260,41 +349,11 @@ const PatientQuestionnaire = () => {
 
         {/* Oral Habits Section */}
         <div className="section-header">Oral Habits</div>
-        <div className="form-group">
-          <label>Tobacco chewing:</label>
-          <div className="multi-input-group">
-            <input type="text" name="tobacco_chewing_frequency" placeholder="Frequency" value={formData.tobacco_chewing_frequency} onChange={handleChange} />
-            <input type="text" name="tobacco_chewing_duration" placeholder="Duration" value={formData.tobacco_chewing_duration} onChange={handleChange} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Betel nut (supari) chewing:</label>
-          <div className="multi-input-group">
-            <input type="text" name="betel_nut_chewing_frequency" placeholder="Frequency" value={formData.betel_nut_chewing_frequency} onChange={handleChange} />
-            <input type="text" name="betel_nut_chewing_duration" placeholder="Duration" value={formData.betel_nut_chewing_duration} onChange={handleChange} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Gutkha chewing:</label>
-          <div className="multi-input-group">
-            <input type="text" name="gutkha_chewing_frequency" placeholder="Frequency" value={formData.gutkha_chewing_frequency} onChange={handleChange} />
-            <input type="text" name="gutkha_chewing_duration" placeholder="Duration" value={formData.gutkha_chewing_duration} onChange={handleChange} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Betel quid chewing:</label>
-          <div className="multi-input-group">
-            <input type="text" name="betel_quid_chewing_frequency" placeholder="Frequency" value={formData.betel_quid_chewing_frequency} onChange={handleChange} />
-            <input type="text" name="betel_quid_chewing_duration" placeholder="Duration" value={formData.betel_quid_chewing_duration} onChange={handleChange} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Mishri use:</label>
-          <div className="multi-input-group">
-            <input type="text" name="mishri_use_frequency" placeholder="Frequency" value={formData.mishri_use_frequency} onChange={handleChange} />
-            <input type="text" name="mishri_use_duration" placeholder="Duration" value={formData.mishri_use_duration} onChange={handleChange} />
-          </div>
-        </div>
+        {renderOralHabit('tobacco_chewing', 'Tobacco chewing:')}
+        {renderOralHabit('betel_nut_chewing', 'Betel nut (supari) chewing:')}
+        {renderOralHabit('gutkha_chewing', 'Gutkha chewing:')}
+        {renderOralHabit('betel_quid_chewing', 'Betel quid chewing:')}
+        {renderOralHabit('mishri_use', 'Mishri use:')}
 
         {/* Symptoms Section */}
         <div className="section-header">Symptoms</div>
@@ -437,7 +496,9 @@ const PatientQuestionnaire = () => {
 
         {/* Submit Button */}
         <div className="form-group">
-          <button type="submit" className="submit-button">Submit </button>
+          <button type="submit" className="submit-button" disabled={isLoading}>
+            {isLoading ? 'Submitting...' : 'Submit'}
+          </button>
         </div>
       </form>
     </div>
