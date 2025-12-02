@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import './FileUploadPopup.css';
+import { API_BASE_URL } from './config';
 
 const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -12,7 +14,6 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
       const file = e.target.files[0];
       setSelectedFile(file);
       
-      // Create a preview URL for the selected file
       const fileReader = new FileReader();
       fileReader.onload = () => {
         setPreviewUrl(fileReader.result);
@@ -29,10 +30,31 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
     cameraInputRef.current.click();
   };
 
-  const handleConfirm = () => {
+  const handleUpload = async () => {
     if (selectedFile) {
-      onFileSelect(selectedFile, site);
-      onClose();
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/image/upload/`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          onFileSelect(result, selectedFile, site); // Pass back the result and the local file
+          onClose();
+        } else {
+          console.error('Upload failed');
+          // Optionally, show an error message to the user
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -93,8 +115,10 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
         <div className="popup-footer">
           {previewUrl && (
             <>
-              <button className="cancel-button" onClick={handleCancel}>Cancel</button>
-              <button className="confirm-button" onClick={handleConfirm}>Confirm</button>
+              <button type="button" className="cancel-button" onClick={handleCancel} disabled={isUploading}>Cancel</button>
+              <button type="button" className="confirm-button" onClick={handleUpload} disabled={isUploading}>
+                {isUploading ? 'Uploading...' : 'Upload'}
+              </button>
             </>
           )}
         </div>

@@ -6,7 +6,7 @@ import Loader from './Loader';
 
 const PatientQuestionnaire = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [dialog, setDialog] = useState({ isOpen: false, message: '', isError: false });
+  const [dialog, setDialog] = useState({ isOpen: true, message: '', isError: false });
   const [formData, setFormData] = useState({
     patient_identification_number: '',
     email: '',
@@ -48,21 +48,21 @@ const PatientQuestionnaire = () => {
     duration_of_symptoms: '',
   });
   const [photos, setPhotos] = useState({});
+  const [imageIds, setImageIds] = useState({});
   const [activePhotoPopup, setActivePhotoPopup] = useState(null);
 
   const handleFileChange = (e, site) => {
-    if (e.target.files && e.target.files[0]) {
-      setPhotos(prevPhotos => ({
-        ...prevPhotos,
-        [site]: e.target.files[0]
-      }));
-    }
+    // This function may no longer be necessary if all file selection happens in the popup
   };
 
-  const handlePhotoSelect = (file, site) => {
+  const handlePhotoSelect = (result, file, site) => {
+    setImageIds(prevIds => ({
+      ...prevIds,
+      [site]: result.id
+    }));
     setPhotos(prevPhotos => ({
       ...prevPhotos,
-      [site]: file
+      [site]: true
     }));
   };
 
@@ -72,6 +72,51 @@ const PatientQuestionnaire = () => {
 
   const closePhotoPopup = () => {
     setActivePhotoPopup(null);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      patient_identification_number: '',
+      email: '',
+      age: '',
+      gender: '',
+      ethnicity: '',
+      education_level: '',
+      occupation: '',
+      smartphone_owner: '',
+      cancer_awareness: '',
+      family_history_oral_cancer: '',
+      smoking_status: '',
+      years_of_smoking: '',
+      packs_per_day: '',
+      years_since_stopping: '',
+      alcohol_consumption: '',
+      tobacco_chewing_status: '',
+      tobacco_chewing_times_per_day: '',
+      tobacco_chewing_duration_years: '',
+      betel_nut_chewing_status: '',
+      betel_nut_chewing_times_per_day: '',
+      betel_nut_chewing_duration_years: '',
+      gutkha_chewing_status: '',
+      gutkha_chewing_times_per_day: '',
+      gutkha_chewing_duration_years: '',
+      betel_quid_chewing_status: '',
+      betel_quid_chewing_times_per_day: '',
+      betel_quid_chewing_duration_years: '',
+      mishri_use_status: '',
+      mishri_use_times_per_day: '',
+      mishri_use_duration_years: '',
+      symptoms_lumps: '',
+      symptoms_soreness: '',
+      symptoms_pain_swallowing: '',
+      symptoms_difficulty_swallowing: '',
+      symptoms_difficulty_moving_tongue: '',
+      symptoms_difficulty_opening_jaw: '',
+      symptoms_white_patches: '',
+      duration_of_symptoms: '',
+    });
+    setPhotos({});
+    setImageIds({});
   };
 
   const handleChange = (e) => {
@@ -86,7 +131,8 @@ const PatientQuestionnaire = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const dataToSend = { ...formData };
+    const images = Object.values(imageIds);
+    const dataToSend = { ...formData, images };
 
     // Convert empty strings to null, as the backend might expect that for optional fields
     Object.keys(dataToSend).forEach(key => {
@@ -95,12 +141,8 @@ const PatientQuestionnaire = () => {
       }
     });
 
-    // Note: This implementation does not handle file uploads.
-    // The API seems to expect a JSON body, which cannot contain file objects directly.
-    // A separate mechanism or endpoint is likely required for photos.
-
     try {
-      const response = await fetch(`https://serenity.medista.ai:9030/api/v1/patient_questionnaire/`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/patient_questionnaire/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +152,7 @@ const PatientQuestionnaire = () => {
 
       if (response.ok) {
         setDialog({ isOpen: true, message: 'Form submitted successfully!', isError: false });
-        // TODO: Implement photo upload logic here. This might require a separate API call.
+        resetForm();
       } else {
         const errorData = await response.json();
         console.error('Form submission failed:', errorData);
@@ -222,11 +264,11 @@ const PatientQuestionnaire = () => {
           <label>Gender:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="male" name="gender" value="male" onChange={handleChange} />
+              <input type="radio" id="male" name="gender" value="male" checked={formData.gender === 'male'} onChange={handleChange} />
               <label htmlFor="male">Male</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="female" name="gender" value="female" onChange={handleChange} />
+              <input type="radio" id="female" name="gender" value="female" checked={formData.gender === 'female'} onChange={handleChange} />
               <label htmlFor="female">Female</label>
             </div>
           </div>
@@ -235,11 +277,11 @@ const PatientQuestionnaire = () => {
           <label>Ethnicity:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="indian" name="ethnicity" value="indian" onChange={handleChange} />
+              <input type="radio" id="indian" name="ethnicity" value="indian" checked={formData.ethnicity === 'indian'} onChange={handleChange} />
               <label htmlFor="indian">Indian</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="other_ethnicity" name="ethnicity" value="other" onChange={handleChange} />
+              <input type="radio" id="other_ethnicity" name="ethnicity" value="other" checked={formData.ethnicity === 'other'} onChange={handleChange} />
               <label htmlFor="other_ethnicity">Other:</label>
               <input type="text" name="ethnicity_other" placeholder="Please specify" onChange={handleChange} />
             </div>
@@ -265,11 +307,11 @@ const PatientQuestionnaire = () => {
           <label>Do you own a smartphone?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="smartphone_yes" name="smartphone_owner" value="yes" onChange={handleChange} />
+              <input type="radio" id="smartphone_yes" name="smartphone_owner" value="yes" checked={formData.smartphone_owner === 'yes'} onChange={handleChange} />
               <label htmlFor="smartphone_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="smartphone_no" name="smartphone_owner" value="no" onChange={handleChange} />
+              <input type="radio" id="smartphone_no" name="smartphone_owner" value="no" checked={formData.smartphone_owner === 'no'} onChange={handleChange} />
               <label htmlFor="smartphone_no">No</label>
             </div>
           </div>
@@ -281,11 +323,11 @@ const PatientQuestionnaire = () => {
           <label>Can chewing betel nut / areca nut / supari cause cancer?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="cancer_awareness_yes" name="cancer_awareness" value="yes" onChange={handleChange} />
+              <input type="radio" id="cancer_awareness_yes" name="cancer_awareness" value="yes" checked={formData.cancer_awareness === 'yes'} onChange={handleChange} />
               <label htmlFor="cancer_awareness_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="cancer_awareness_no" name="cancer_awareness" value="no" onChange={handleChange} />
+              <input type="radio" id="cancer_awareness_no" name="cancer_awareness" value="no" checked={formData.cancer_awareness === 'no'} onChange={handleChange} />
               <label htmlFor="cancer_awareness_no">No</label>
             </div>
           </div>
@@ -294,11 +336,11 @@ const PatientQuestionnaire = () => {
           <label>Family history of oral cavity cancer?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="family_history_yes" name="family_history_oral_cancer" value="yes" onChange={handleChange} />
+              <input type="radio" id="family_history_yes" name="family_history_oral_cancer" value="yes" checked={formData.family_history_oral_cancer === 'yes'} onChange={handleChange} />
               <label htmlFor="family_history_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="family_history_no" name="family_history_oral_cancer" value="no" onChange={handleChange} />
+              <input type="radio" id="family_history_no" name="family_history_oral_cancer" value="no" checked={formData.family_history_oral_cancer === 'no'} onChange={handleChange} />
               <label htmlFor="family_history_no">No</label>
             </div>
           </div>
@@ -310,15 +352,15 @@ const PatientQuestionnaire = () => {
           <label>Smoking Status:</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="smoker" name="smoking_status" value="smoker" onChange={handleChange} />
+              <input type="radio" id="smoker" name="smoking_status" value="smoker" checked={formData.smoking_status === 'smoker'} onChange={handleChange} />
               <label htmlFor="smoker">Smoker</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="ex_smoker" name="smoking_status" value="ex-smoker" onChange={handleChange} />
+              <input type="radio" id="ex_smoker" name="smoking_status" value="ex-smoker" checked={formData.smoking_status === 'ex-smoker'} onChange={handleChange} />
               <label htmlFor="ex_smoker">Ex-smoker</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="never_smoked" name="smoking_status" value="never" onChange={handleChange} />
+              <input type="radio" id="never_smoked" name="smoking_status" value="never" checked={formData.smoking_status === 'never'} onChange={handleChange} />
               <label htmlFor="never_smoked">Never smoked</label>
             </div>
           </div>
@@ -361,11 +403,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any lumps, lesions or ulcers in the mouth or throat which are not healing?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms1_yes" name="symptoms_lumps" value="yes" onChange={handleChange} />
+              <input type="radio" id="symptoms1_yes" name="symptoms_lumps" value="yes" checked={formData.symptoms_lumps === 'yes'} onChange={handleChange} />
               <label htmlFor="symptoms1_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms1_no" name="symptoms_lumps" value="no" onChange={handleChange} />
+              <input type="radio" id="symptoms1_no" name="symptoms_lumps" value="no" checked={formData.symptoms_lumps === 'no'} onChange={handleChange} />
               <label htmlFor="symptoms1_no">No</label>
             </div>
           </div>
@@ -374,11 +416,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any soreness or pain in your mouth or throat?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms2_yes" name="symptoms_soreness" value="yes" onChange={handleChange} />
+              <input type="radio" id="symptoms2_yes" name="symptoms_soreness" value="yes" checked={formData.symptoms_soreness === 'yes'} onChange={handleChange} />
               <label htmlFor="symptoms2_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms2_no" name="symptoms_soreness" value="no" onChange={handleChange} />
+              <input type="radio" id="symptoms2_no" name="symptoms_soreness" value="no" checked={formData.symptoms_soreness === 'no'} onChange={handleChange} />
               <label htmlFor="symptoms2_no">No</label>
             </div>
           </div>
@@ -387,11 +429,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any pain when you swallow?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms3_yes" name="symptoms_pain_swallowing" value="yes" onChange={handleChange} />
+              <input type="radio" id="symptoms3_yes" name="symptoms_pain_swallowing" value="yes" checked={formData.symptoms_pain_swallowing === 'yes'} onChange={handleChange} />
               <label htmlFor="symptoms3_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms3_no" name="symptoms_pain_swallowing" value="no" onChange={handleChange} />
+              <input type="radio" id="symptoms3_no" name="symptoms_pain_swallowing" value="no" checked={formData.symptoms_pain_swallowing === 'no'} onChange={handleChange} />
               <label htmlFor="symptoms3_no">No</label>
             </div>
           </div>
@@ -400,11 +442,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any difficulty swallowing?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms4_yes" name="symptoms_difficulty_swallowing" value="yes" onChange={handleChange} />
+              <input type="radio" id="symptoms4_yes" name="symptoms_difficulty_swallowing" value="yes" checked={formData.symptoms_difficulty_swallowing === 'yes'} onChange={handleChange} />
               <label htmlFor="symptoms4_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms4_no" name="symptoms_difficulty_swallowing" value="no" onChange={handleChange} />
+              <input type="radio" id="symptoms4_no" name="symptoms_difficulty_swallowing" value="no" checked={formData.symptoms_difficulty_swallowing === 'no'} onChange={handleChange} />
               <label htmlFor="symptoms4_no">No</label>
             </div>
           </div>
@@ -413,11 +455,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any difficulty moving your tongue?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms5_yes" name="symptoms_difficulty_moving_tongue" value="yes" onChange={handleChange} />
+              <input type="radio" id="symptoms5_yes" name="symptoms_difficulty_moving_tongue" value="yes" checked={formData.symptoms_difficulty_moving_tongue === 'yes'} onChange={handleChange} />
               <label htmlFor="symptoms5_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms5_no" name="symptoms_difficulty_moving_tongue" value="no" onChange={handleChange} />
+              <input type="radio" id="symptoms5_no" name="symptoms_difficulty_moving_tongue" value="no" checked={formData.symptoms_difficulty_moving_tongue === 'no'} onChange={handleChange} />
               <label htmlFor="symptoms5_no">No</label>
             </div>
           </div>
@@ -426,11 +468,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any difficulty opening or moving your jaw?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms6_yes" name="symptoms_difficulty_opening_jaw" value="yes" onChange={handleChange} />
+              <input type="radio" id="symptoms6_yes" name="symptoms_difficulty_opening_jaw" value="yes" checked={formData.symptoms_difficulty_opening_jaw === 'yes'} onChange={handleChange} />
               <label htmlFor="symptoms6_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms6_no" name="symptoms_difficulty_opening_jaw" value="no" onChange={handleChange} />
+              <input type="radio" id="symptoms6_no" name="symptoms_difficulty_opening_jaw" value="no" checked={formData.symptoms_difficulty_opening_jaw === 'no'} onChange={handleChange} />
               <label htmlFor="symptoms6_no">No</label>
             </div>
           </div>
@@ -439,11 +481,11 @@ const PatientQuestionnaire = () => {
           <label>Do you have any white patches inside your mouth?</label>
           <div className="radio-group">
             <div className="radio-option">
-              <input type="radio" id="symptoms7_yes" name="symptoms_white_patches" value="yes" onChange={handleChange} />
+              <input type="radio" id="symptoms7_yes" name="symptoms_white_patches" value="yes" checked={formData.symptoms_white_patches === 'yes'} onChange={handleChange} />
               <label htmlFor="symptoms7_yes">Yes</label>
             </div>
             <div className="radio-option">
-              <input type="radio" id="symptoms7_no" name="symptoms_white_patches" value="no" onChange={handleChange} />
+              <input type="radio" id="symptoms7_no" name="symptoms_white_patches" value="no" checked={formData.symptoms_white_patches === 'no'} onChange={handleChange} />
               <label htmlFor="symptoms7_no">No</label>
             </div>
           </div>
@@ -466,21 +508,20 @@ const PatientQuestionnaire = () => {
         <div className="form-group">
           <label>Photographs:</label>
           <div className="multi-input-group">
-            {[1, 2, 3, 4, 5, 6].map(site => (
+            {[
+              "Upper Lip", "Lower Lip", "Left Cheeks (Inside)", "Right Cheeks (Inside)",
+              "Tongue Top", "Tongue Back", "Left Side Tongue", "Right Side Tongue",
+              "Roof of Mouth", "Bottom of Mouth", "Gums", "Back of Throat"
+            ].map(site => (
               <div key={site} className="file-input-container">
-                <label>Site {site}:</label>
-                <button 
-                  type="button" 
+                <label>{site}:</label>
+                <button
+                  type="button"
                   className="file-upload-button"
-                  onClick={() => openPhotoPopup(`site${site}`)}
+                  onClick={() => openPhotoPopup(site)}
                 >
-                  {photos[`site${site}`] ? 'Change Photo' : 'Add Photo'}
+                  {photos[site] ? 'Change Photo' : 'Add Photo'}
                 </button>
-                {photos[`site${site}`] && (
-                  <div className="file-item">
-                    {photos[`site${site}`].name}
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -489,7 +530,7 @@ const PatientQuestionnaire = () => {
               isOpen={!!activePhotoPopup}
               onClose={closePhotoPopup}
               onFileSelect={handlePhotoSelect}
-              site={activePhotoPopup.replace('site', '')}
+              site={activePhotoPopup}
             />
           )}
         </div>
