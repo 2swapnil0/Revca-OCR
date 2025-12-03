@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import PatientQuestionnaire from './PatientQuestionnaire';
 import PhysicianQuestionnaire from './PhysicianQuestionnaire';
 import Login from './Login';
+import LanguageSelection from './LanguageSelection';
+import { LanguageProvider } from './LanguageContext';
 import './App.css';
 
 const PrivateRoute = ({ children }) => {
@@ -10,15 +12,20 @@ const PrivateRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
-function App() {
+function AppContent() {
   const location = useLocation();
   const isAuthenticated = localStorage.getItem('isAuthenticated');
   const navigate = useNavigate();
+  const [languageSelected, setLanguageSelected] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('token');
     navigate('/login');
+  };
+
+  const handleLanguageSelect = () => {
+    setLanguageSelected(true);
   };
 
   return (
@@ -35,7 +42,16 @@ function App() {
       )}
       <Routes>
         <Route path="/" element={<Navigate to="/patient" />} />
-        <Route path="/patient" element={<PatientQuestionnaire />} />
+        <Route 
+          path="/patient" 
+          element={
+            !languageSelected ? (
+              <LanguageSelection onLanguageSelect={handleLanguageSelect} />
+            ) : (
+              <PatientQuestionnaire />
+            )
+          } 
+        />
         <Route path="/login" element={<Login />} />
         <Route
           path="/physician"
@@ -47,6 +63,14 @@ function App() {
         />
       </Routes>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 
