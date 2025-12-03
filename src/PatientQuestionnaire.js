@@ -49,13 +49,14 @@ const PatientQuestionnaire = () => {
   });
   const [photos, setPhotos] = useState({});
   const [imageIds, setImageIds] = useState({});
+  const [imageNotes, setImageNotes] = useState({});
   const [activePhotoPopup, setActivePhotoPopup] = useState(null);
 
   const handleFileChange = (e, site) => {
     // This function may no longer be necessary if all file selection happens in the popup
   };
 
-  const handlePhotoSelect = (result, file, site) => {
+  const handlePhotoSelect = (result, file, site, note) => {
     setImageIds(prevIds => ({
       ...prevIds,
       [site]: result.id
@@ -64,6 +65,12 @@ const PatientQuestionnaire = () => {
       ...prevPhotos,
       [site]: true
     }));
+    if (note) {
+      setImageNotes(prevNotes => ({
+        ...prevNotes,
+        [site]: note
+      }));
+    }
   };
 
   const openPhotoPopup = (site) => {
@@ -117,6 +124,14 @@ const PatientQuestionnaire = () => {
     });
     setPhotos({});
     setImageIds({});
+    setImageNotes({});
+  };
+
+  const handleNoteChange = (site, value) => {
+    setImageNotes(prevNotes => ({
+      ...prevNotes,
+      [site]: value
+    }));
   };
 
   const handleChange = (e) => {
@@ -131,7 +146,10 @@ const PatientQuestionnaire = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const images = Object.values(imageIds);
+    const images = Object.keys(imageIds).map(site => ({
+      id: imageIds[site],
+      note: imageNotes[site] || ''
+    }));
     const dataToSend = { ...formData, images };
 
     // Convert empty strings to null, as the backend might expect that for optional fields
@@ -594,14 +612,21 @@ const PatientQuestionnaire = () => {
               "Roof of Mouth", "Bottom of Mouth", "Gums", "Back of Throat"
             ].map(site => (
               <div key={site} className="file-input-container">
-                <label>{site}:</label>
-                <button
-                  type="button"
-                  className="file-upload-button"
-                  onClick={() => openPhotoPopup(site)}
-                >
-                  {photos[site] ? 'Change Photo' : 'Add Photo'}
-                </button>
+                <div className="file-input-row">
+                  <label>{site}:</label>
+                  <button
+                    type="button"
+                    className="file-upload-button"
+                    onClick={() => openPhotoPopup(site)}
+                  >
+                    {photos[site] ? 'Change Photo' : 'Add Photo'}
+                  </button>
+                </div>
+                {imageNotes[site] && (
+                  <div className="image-note-display">
+                    <strong>Note:</strong> {imageNotes[site]}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -611,6 +636,7 @@ const PatientQuestionnaire = () => {
               onClose={closePhotoPopup}
               onFileSelect={handlePhotoSelect}
               site={activePhotoPopup}
+              initialNote={imageNotes[activePhotoPopup] || ''}
             />
           )}
         </div>

@@ -2,9 +2,10 @@ import React, { useState, useRef } from 'react';
 import './FileUploadPopup.css';
 import { API_BASE_URL } from './config';
 
-const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
+const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = '' }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [note, setNote] = useState(initialNote);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -36,6 +37,9 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('tag', site);
+      if (note) {
+        formData.append('note', note);
+      }
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/v1/image/upload/`, {
@@ -45,7 +49,7 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
 
         if (response.ok) {
           const result = await response.json();
-          onFileSelect(result, selectedFile, site); // Pass back the result and the local file
+          onFileSelect(result, selectedFile, site, note); // Pass back the result, local file, and note
           onClose();
         } else {
           console.error('Upload failed');
@@ -108,6 +112,16 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site }) => {
               <div className="file-info">
                 <p>{selectedFile.name}</p>
                 <p>{Math.round(selectedFile.size / 1024)} KB</p>
+              </div>
+              <div className="note-input-container">
+                <label htmlFor="image-note">Note (optional):</label>
+                <textarea
+                  id="image-note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Add a note about this image..."
+                  className="image-note-textarea"
+                />
               </div>
             </div>
           )}

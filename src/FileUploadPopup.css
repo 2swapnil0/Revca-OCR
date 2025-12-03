@@ -120,6 +120,37 @@
 .file-info p {
   margin: 5px 0;
 }
+.note-input-container {
+  width: 100%;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.note-input-container label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.image-note-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.image-note-textarea:focus {
+  border-color: #3498db;
+  outline: none;
+}
 
 .popup-footer {
   display: flex;

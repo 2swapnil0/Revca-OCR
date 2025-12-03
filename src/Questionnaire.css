@@ -337,6 +337,36 @@
   background-color: var(--secondary-color);
   transform: translateY(-2px);
 }
+.file-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.file-input-row label {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.file-input-row .file-upload-button {
+  width: auto;
+  margin-left: 1rem;
+}
+
+.image-note-input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.image-note-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
 
 /* Mobile-friendly form styles */
 .mobile-friendly-form input[type="radio"],

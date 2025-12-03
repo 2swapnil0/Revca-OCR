@@ -59,6 +59,7 @@ const comorbiditiesOptions = {
 
 const PhysicianQuestionnaire = () => {
   const [patients, setPatients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showPatientList, setShowPatientList] = useState(true); // Set to true by default
   const [isLoading, setIsLoading] = useState(true); // Start with loading state
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -379,22 +380,43 @@ const PhysicianQuestionnaire = () => {
       {showPatientList && !isLoading && !selectedPatient && (
         <div className="patient-list-container">
           <h2>All Patients</h2>
+          
+          <div className="search-bar-container">
+            <input
+              type="text"
+              placeholder="Search patients by email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+
           <div className="patient-profiles">
-            {patients.map(patient => (
-              <div 
-                key={patient.id} 
-                className="patient-profile"
-                onClick={() => handlePatientClick(patient)}
-              >
-                <div 
-                  className="patient-avatar"
-                  style={{ backgroundColor: getRandomColor(patient.email) }}
+            {patients
+              .filter(patient =>
+                patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map(patient => (
+                <div
+                  key={patient.id}
+                  className="patient-profile"
+                  onClick={() => handlePatientClick(patient)}
                 >
-                  {getInitial(patient.email)}
+                  <div
+                    className="patient-avatar"
+                    style={{ backgroundColor: getRandomColor(patient.email) }}
+                  >
+                    {getInitial(patient.email)}
+                  </div>
+                  <div className="patient-email">{patient.email}</div>
                 </div>
-                <div className="patient-email">{patient.email}</div>
-              </div>
-            ))}
+              ))}
+            
+            {patients.filter(patient =>
+              patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase())
+            ).length === 0 && (
+              <div className="no-results">No patients found matching "{searchTerm}"</div>
+            )}
           </div>
         </div>
       )}
