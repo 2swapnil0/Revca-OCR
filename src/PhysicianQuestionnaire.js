@@ -150,10 +150,47 @@ const PhysicianQuestionnaire = () => {
   const [followupMessages, setFollowupMessages] = useState([]);
   const [showFollowupPopup, setShowFollowupPopup] = useState(false);
   const [newFollowupMessage, setNewFollowupMessage] = useState('');
-
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [newlyCreatedPatient, setNewlyCreatedPatient] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const handleAddNewPatient = async () => {
+    setIsLoading(true);
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/patient_questionnaire/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`,
+        },
+        body: JSON.stringify({ images: [] }),
+      });
 
+      if (response.ok) {
+        const newPatient = await response.json();
+        setNewlyCreatedPatient(newPatient);
+        setShowSuccessPopup(true);
+      } else {
+        console.error('Failed to create a new patient');
+        alert('Failed to create a new patient. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating new patient:', error);
+      alert('An error occurred while creating a new patient.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCloseSuccessPopup = () => {
+    setShowSuccessPopup(false);
+    if (newlyCreatedPatient) {
+        handlePatientClick(newlyCreatedPatient);
+        setShowPatientList(false);
+        setNewlyCreatedPatient(null);
+    }
+  };
   // Fetch patients when component mounts
   useEffect(() => {
     fetchPatients();
@@ -378,6 +415,8 @@ const PhysicianQuestionnaire = () => {
   const handleBackToList = () => {
     setSelectedPatient(null);
     setShowPrescriptionForm(false);
+    setShowPatientList(true);
+    fetchPatients();
   };
   
   const handleBackToPatientDetails = () => {
@@ -607,21 +646,21 @@ const PhysicianQuestionnaire = () => {
     return 'Not provided';
   };
 
-  const getInitial = (email) => {
-    return email && email.length > 0 ? email[0].toUpperCase() : '?';
+  const getInitial = (identifier) => {
+    return identifier && identifier.length > 0 ? identifier[0].toUpperCase() : '?';
   };
 
-  const getRandomColor = (email) => {
+  const getRandomColor = (identifier) => {
     const colors = [
       '#FF5733', '#33FF57', '#3357FF', '#F033FF', '#FF33F0',
       '#33FFF0', '#F0FF33', '#FF3333', '#33FF33', '#3333FF'
     ];
     
-    // Simple hash function to get consistent color for the same email
+    // Simple hash function to get consistent color for the same identifier
     let hash = 0;
-    if (email && email.length > 0) {
-      for (let i = 0; i < email.length; i++) {
-        hash = email.charCodeAt(i) + ((hash << 5) - hash);
+    if (identifier && identifier.length > 0) {
+      for (let i = 0; i < identifier.length; i++) {
+        hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
       }
     }
     
@@ -667,10 +706,9 @@ const PhysicianQuestionnaire = () => {
 
   return (
     <div className="questionnaire-container">
-      <PhysicianActions />
-      {isLoading && <Loader />}
-      
-      {showPatientList && !isLoading && !selectedPatient && (
+     <PhysicianActions onAddNewPatient={handleAddNewPatient} />
+     {isLoading && <Loader />}
+     {showPatientList && !isLoading && !selectedPatient && (
         <div className="patient-list-container">
           <h2>All Patients</h2>
           
@@ -715,11 +753,11 @@ const PhysicianQuestionnaire = () => {
               >
                 <div
                   className="patient-avatar"
-                  style={{ backgroundColor: getRandomColor(patient.email) }}
+                  style={{ backgroundColor: getRandomColor(patient.patient_identification_number) }}
                 >
-                  {getInitial(patient.email)}
+                  {getInitial(patient.patient_identification_number)}
                 </div>
-                <div className="patient-email">{patient.email}</div>
+                <div className="patient-email">{patient.patient_identification_number}</div>
               </div>
             ))}
             
@@ -736,7 +774,7 @@ const PhysicianQuestionnaire = () => {
             <button className="back-button" onClick={handleBackToList}>
               ← Back to Patient List
             </button>
-            <h2>Patient: {selectedPatient.email}</h2>
+            <h2>Patient: {selectedPatient.patient_identification_number || selectedPatient.email}</h2>
           </div>
 
           <div className="tab-switcher">
@@ -1434,8 +1472,28 @@ const PhysicianQuestionnaire = () => {
         </div>
       )}
       <ImageViewer />
+      {showSuccessPopup && newlyCreatedPatient && (
+        <div className="popup-overlay">
+          <div className="popup-container">
+            <div className="popup-header">
+              <h3>Patient Created Successfully</h3>
+              <button className="close-button" onClick={handleCloseSuccessPopup}>×</button>
+            </div>
+            <div className="popup-content">
+              <p>A new patient record has been created.</p>
+              <p><strong>Patient ID:</strong> {newlyCreatedPatient.patient_identification_number}</p>
+            </div>
+            <div className="popup-footer">
+              <button className="confirm-button" onClick={handleCloseSuccessPopup}>
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default PhysicianQuestionnaire;
+
