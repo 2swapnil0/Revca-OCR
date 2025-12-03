@@ -146,6 +146,12 @@ const PhysicianQuestionnaire = () => {
     }
   };
 
+  const formatBoolean = (value) => {
+    if (value === true || value === 'yes') return 'Yes';
+    if (value === false || value === 'no') return 'No';
+    return 'Not provided';
+  };
+
   const getInitial = (email) => {
     return email && email.length > 0 ? email[0].toUpperCase() : '?';
   };
@@ -258,13 +264,11 @@ const PhysicianQuestionnaire = () => {
               <div className="details-grid">
                 <div className="detail-item">
                   <span className="detail-label">Cancer Awareness:</span>
-                  <span className="detail-value">{selectedPatient.cancer_awareness === 'yes' ? 'Yes' : 
-                    selectedPatient.cancer_awareness === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.cancer_awareness)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Family History:</span>
-                  <span className="detail-value">{selectedPatient.family_history_oral_cancer === 'yes' ? 'Yes' : 
-                    selectedPatient.family_history_oral_cancer === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.family_history)}</span>
                 </div>
               </div>
             </div>
@@ -280,7 +284,7 @@ const PhysicianQuestionnaire = () => {
                   <>
                     <div className="detail-item">
                       <span className="detail-label">Years of Smoking:</span>
-                      <span className="detail-value">{selectedPatient.years_of_smoking || 'Not provided'}</span>
+                      <span className="detail-value">{selectedPatient.smoking_years || 'Not provided'}</span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Packs per Day:</span>
@@ -352,44 +356,105 @@ const PhysicianQuestionnaire = () => {
               <div className="details-grid">
                 <div className="detail-item">
                   <span className="detail-label">Lumps/Ulcers:</span>
-                  <span className="detail-value">{selectedPatient.symptoms_lumps === 'yes' ? 'Yes' : 
-                    selectedPatient.symptoms_lumps === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.symptoms_lumps)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Soreness/Pain:</span>
-                  <span className="detail-value">{selectedPatient.symptoms_soreness === 'yes' ? 'Yes' : 
-                    selectedPatient.symptoms_soreness === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.symptoms_soreness)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Pain Swallowing:</span>
-                  <span className="detail-value">{selectedPatient.symptoms_pain_swallowing === 'yes' ? 'Yes' : 
-                    selectedPatient.symptoms_pain_swallowing === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.symptoms_pain_swallowing)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Difficulty Swallowing:</span>
-                  <span className="detail-value">{selectedPatient.symptoms_difficulty_swallowing === 'yes' ? 'Yes' : 
-                    selectedPatient.symptoms_difficulty_swallowing === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.symptoms_difficulty_swallowing)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Difficulty Moving Tongue:</span>
-                  <span className="detail-value">{selectedPatient.symptoms_difficulty_moving_tongue === 'yes' ? 'Yes' : 
-                    selectedPatient.symptoms_difficulty_moving_tongue === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.symptoms_difficulty_tongue)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Difficulty Opening Jaw:</span>
-                  <span className="detail-value">{selectedPatient.symptoms_difficulty_opening_jaw === 'yes' ? 'Yes' : 
-                    selectedPatient.symptoms_difficulty_opening_jaw === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.symptoms_difficulty_jaw)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">White Patches:</span>
-                  <span className="detail-value">{selectedPatient.symptoms_white_patches === 'yes' ? 'Yes' : 
-                    selectedPatient.symptoms_white_patches === 'no' ? 'No' : 'Not provided'}</span>
+                  <span className="detail-value">{formatBoolean(selectedPatient.symptoms_white_patches)}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Duration of Symptoms:</span>
-                  <span className="detail-value">{selectedPatient.duration_of_symptoms || 'Not provided'}</span>
+                  <span className="detail-value">{selectedPatient.symptoms_duration || 'Not provided'}</span>
                 </div>
               </div>
+            </div>
+
+            <div className="patient-details-section">
+              <h3>Physician Follow-ups</h3>
+              {selectedPatient.physician_questionnaires && selectedPatient.physician_questionnaires.length > 0 ? (
+                <div className="follow-ups-container">
+                  {selectedPatient.physician_questionnaires.map((followup, index) => (
+                    <div key={followup.id || index} className="follow-up-card" style={{
+                      backgroundColor: '#f9f9f9',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      marginBottom: '15px',
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <h4 style={{ marginTop: 0, borderBottom: '1px solid #ddd', paddingBottom: '10px', marginBottom: '15px' }}>
+                        Follow-up #{index + 1}
+                        <span style={{ fontSize: '0.8em', fontWeight: 'normal', float: 'right', color: '#666' }}>
+                          {followup.created_at ? new Date(followup.created_at).toLocaleString() : 'Date not available'}
+                        </span>
+                      </h4>
+                      <div className="details-grid">
+                        <div className="detail-item">
+                          <span className="detail-label">Comorbidities:</span>
+                          <span className="detail-value">{followup.comorbidities || 'None'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Lesion Info:</span>
+                          <span className="detail-value">{followup.oropharyngeal_lesion_information || 'None'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Laterality:</span>
+                          <span className="detail-value">{followup.laterality || 'Not specified'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Size:</span>
+                          <span className="detail-value">{followup.size ? `${followup.size} mm` : 'Not specified'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Clinical Findings:</span>
+                          <span className="detail-value">{followup.clinical_examination_findings || 'None'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Staging:</span>
+                          <span className="detail-value">{followup.staging ? followup.staging.replace('_', ' ').toUpperCase() : 'Not specified'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Histological Type:</span>
+                          <span className="detail-value">{followup.histological_type || 'Not specified'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Grade:</span>
+                          <span className="detail-value">{followup.grade ? followup.grade.replace('_', ' ').toUpperCase() : 'Not specified'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Molecular Analysis:</span>
+                          <span className="detail-value">{followup.molecular_genetic_analysis ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Unique ID:</span>
+                          <span className="detail-value">{followup.unique_identifier || 'None'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="no-data-message">No follow-up records found.</p>
+              )}
             </div>
           </div>
         </div>
