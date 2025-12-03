@@ -639,6 +639,9 @@ const PatientQuestionnaire = ({ initialPatientId, existingData }) => {
             onChange={handleChange}
             disabled={!!initialPatientId || !!existingData}
           />
+          <div style={{ color: '#e74c3c', fontSize: '0.9rem', marginTop: '5px', fontWeight: 'bold' }}>
+            {t('Important')}: {t('Please Keep This Number Safe')}
+          </div>
         </div>
         <div className="form-group">
           <label>{t('email')}:</label>
