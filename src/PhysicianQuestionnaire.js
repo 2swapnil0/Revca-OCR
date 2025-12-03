@@ -9,36 +9,52 @@ import FileUploadPopup from './FileUploadPopup';
 
 const comorbiditiesOptions = {
   "General / Metabolic": [
-    "Obesity", "Malnutrition", "Dyslipidemia", "Diabetes mellitus – Type 1",
-    "Diabetes mellitus – Type 2", "Hypothyroidism", "Hyperthyroidism", "Other General/Metabolic"
+    { label: "Obesity", name: "obesity" },
+    { label: "Malnutrition", name: "malnutrition" },
+    { label: "Dyslipidemia", name: "dyslipidemia" },
+    { label: "Diabetes mellitus – Type 1", name: "diabetes_mellitus_type_1" },
+    { label: "Diabetes mellitus – Type 2", name: "diabetes_mellitus_type_2" },
+    { label: "Hypothyroidism", name: "hypothyroidism" },
+    { label: "Hyperthyroidism", name: "hyperthyroidism" },
+    { label: "Other", name: "other_general_metabolic" }
   ],
   "Cardiovascular": [
-    "Hypertension", "Coronary artery disease", "Congestive heart failure",
-    "Cardiac arrhythmia", "Peripheral vascular disease", "Other Cardiovascular"
+    { label: "Hypertension", name: "hypertension" },
+    { label: "Coronary artery disease", name: "coronary_artery_disease" },
+    { label: "Congestive heart failure", name: "congestive_heart_failure" },
+    { label: "Cardiac arrhythmia (e.g., atrial fibrillation)", name: "cardiac_arrhythmia" },
+    { label: "Peripheral vascular disease", name: "peripheral_vascular_disease" },
+    { label: "Other", name: "other_cardiovascular" }
   ],
   "Cerebrovascular / Neurologic": [
-    "Prior stroke / Transient ischemic attack (TIA)", "Dementia / Cognitive impairment"
+    { label: "Prior stroke / Transient ischemic attack (TIA)", name: "prior_stroke_transient_ischemic_attack_tia" },
+    { label: "Dementia / Cognitive impairment", name: "dementia_cognitive_impairment" }
   ],
   "Respiratory": [
-    "Chronic obstructive pulmonary disease (COPD)", "Asthma", "Other Respiratory"
+    { label: "Chronic obstructive pulmonary disease (COPD)", name: "chronic_obstructive_pulmonary_disease_copd" },
+    { label: "Asthma", name: "asthma" },
+    { label: "Other", name: "other_respiratory" }
   ],
   "Gastrointestinal / Hepatic / Renal": [
-    "Chronic liver disease / Cirrhosis", "Peptic ulcer disease",
-    "Gastroesophageal reflux disease (GERD)", "Chronic kidney disease", "Other GI/Hepatic/Renal"
+    { label: "Chronic liver disease / Cirrhosis", name: "chronic_liver_disease_cirrhosis" },
+    { label: "Peptic ulcer disease", name: "peptic_ulcer_disease" },
+    { label: "Gastroesophageal reflux disease (GERD)", name: "gastroesophageal_reflux_disease_gerd" },
+    { label: "Chronic kidney disease", name: "chronic_kidney_disease" },
+    { label: "Other", name: "other_gi_hepatic_renal" }
   ],
   "Immunologic / Autoimmune": [
-    "Immunosuppression", "Autoimmune disease"
+    { label: "Immunosuppression (e.g., HIV, long-term steroids, transplant)", name: "immunosuppression" },
+    { label: "Autoimmune disease (e.g., rheumatoid arthritis, lupus)", name: "autoimmune_disease" }
   ],
   "Hematologic": [
-    "Aneamia or chronic hematologic disorder"
+    { label: "Aneamia or chronic hematologic disorder", name: "aneamia_or_chronic_hematologic_disorder" }
   ],
   "Psychiatric": [
-    "Psychiatric illness"
+    { label: "Psychiatric illness (e.g., depression, anxiety, bipolar disorder)", name: "psychiatric_illness" }
   ],
   "Oncologic": [
-    "Prior cancer (other than oral cavity)"
-  ],
-  "None": ["None"]
+    { label: "Prior cancer (other than oral cavity)", name: "prior_cancer_other_than_oral_cavity" }
+  ]
 };
 
 const PhysicianQuestionnaire = () => {
@@ -49,7 +65,37 @@ const PhysicianQuestionnaire = () => {
   const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
   const [prescriptionData, setPrescriptionData] = useState({
     patient_questionnaire_id: 0,
-    comorbidities: '',
+    // Comorbidities fields
+    obesity: false,
+    malnutrition: false,
+    dyslipidemia: false,
+    diabetes_mellitus_type_1: false,
+    diabetes_mellitus_type_2: false,
+    hypothyroidism: false,
+    hyperthyroidism: false,
+    other_general_metabolic: false,
+    hypertension: false,
+    coronary_artery_disease: false,
+    congestive_heart_failure: false,
+    cardiac_arrhythmia: false,
+    peripheral_vascular_disease: false,
+    other_cardiovascular: false,
+    prior_stroke_transient_ischemic_attack_tia: false,
+    dementia_cognitive_impairment: false,
+    chronic_obstructive_pulmonary_disease_copd: false,
+    asthma: false,
+    other_respiratory: false,
+    chronic_liver_disease_cirrhosis: false,
+    peptic_ulcer_disease: false,
+    gastroesophageal_reflux_disease_gerd: false,
+    chronic_kidney_disease: false,
+    other_gi_hepatic_renal: false,
+    immunosuppression: false,
+    autoimmune_disease: false,
+    aneamia_or_chronic_hematologic_disorder: false,
+    psychiatric_illness: false,
+    prior_cancer_other_than_oral_cavity: false,
+    
     oropharyngeal_lesion_information: '',
     laterality: '',
     size: '',
@@ -61,13 +107,14 @@ const PhysicianQuestionnaire = () => {
     unique_identifier: '',
     images: [],
     primary_treatment_modality: '',
-    disease_status: '',
-    follow_up_period: ''
+    disease_status_at_follow_up: '',
+    time_period_months: ''
   });
   
   const [activePhotoPopup, setActivePhotoPopup] = useState(null);
   const [uploadedPhotos, setUploadedPhotos] = useState({});
   const [imageIds, setImageIds] = useState({});
+  const [selectedFollowUp, setSelectedFollowUp] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -77,10 +124,10 @@ const PhysicianQuestionnaire = () => {
     fetchPatients();
   }, []);
 
-  const fetchPatients = async () => {
+  const fetchPatients = async (preserveSelected = false) => {
     setIsLoading(true);
     // Don't reset showPatientList to false when loading initially
-    if (!showPatientList) {
+    if (!showPatientList && !preserveSelected) {
       setSelectedPatient(null);
       setShowPrescriptionForm(false);
     }
@@ -96,6 +143,13 @@ const PhysicianQuestionnaire = () => {
         const data = await response.json();
         setPatients(data);
         setShowPatientList(true);
+        
+        if (preserveSelected && selectedPatient) {
+          const updatedPatient = data.find(p => p.id === selectedPatient.id);
+          if (updatedPatient) {
+            setSelectedPatient(updatedPatient);
+          }
+        }
       } else {
         console.error('Failed to fetch patients');
       }
@@ -106,9 +160,28 @@ const PhysicianQuestionnaire = () => {
     }
   };
 
-  const handlePatientClick = (patient) => {
-    setSelectedPatient(patient);
-    setShowPrescriptionForm(false);
+  const handlePatientClick = async (patient) => {
+    setIsLoading(true);
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/patient_questionnaire/${patient.id}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Token ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedPatient(data);
+        setShowPrescriptionForm(false);
+      } else {
+        console.error('Failed to fetch patient details');
+      }
+    } catch (error) {
+      console.error('Error fetching patient details:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackToList = () => {
@@ -171,6 +244,14 @@ const PhysicianQuestionnaire = () => {
       [site]: true
     }));
   };
+
+  const handleFollowUpClick = (followup) => {
+    setSelectedFollowUp(followup);
+  };
+
+  const closeFollowUpPopup = () => {
+    setSelectedFollowUp(null);
+  };
   
   const handlePrescriptionSubmit = async (e) => {
     e.preventDefault();
@@ -180,7 +261,7 @@ const PhysicianQuestionnaire = () => {
     const dataToSend = {
       ...prescriptionData,
       size: prescriptionData.size ? Number(prescriptionData.size) : 0,
-      follow_up_period: prescriptionData.follow_up_period ? Number(prescriptionData.follow_up_period) : null,
+      time_period_months: prescriptionData.time_period_months ? Number(prescriptionData.time_period_months) : null,
       images: Object.values(imageIds)
     };
     
@@ -201,7 +282,35 @@ const PhysicianQuestionnaire = () => {
         // Reset form data
         setPrescriptionData({
           patient_questionnaire_id: 0,
-          comorbidities: '',
+          obesity: false,
+          malnutrition: false,
+          dyslipidemia: false,
+          diabetes_mellitus_type_1: false,
+          diabetes_mellitus_type_2: false,
+          hypothyroidism: false,
+          hyperthyroidism: false,
+          other_general_metabolic: false,
+          hypertension: false,
+          coronary_artery_disease: false,
+          congestive_heart_failure: false,
+          cardiac_arrhythmia: false,
+          peripheral_vascular_disease: false,
+          other_cardiovascular: false,
+          prior_stroke_transient_ischemic_attack_tia: false,
+          dementia_cognitive_impairment: false,
+          chronic_obstructive_pulmonary_disease_copd: false,
+          asthma: false,
+          other_respiratory: false,
+          chronic_liver_disease_cirrhosis: false,
+          peptic_ulcer_disease: false,
+          gastroesophageal_reflux_disease_gerd: false,
+          chronic_kidney_disease: false,
+          other_gi_hepatic_renal: false,
+          immunosuppression: false,
+          autoimmune_disease: false,
+          aneamia_or_chronic_hematologic_disorder: false,
+          psychiatric_illness: false,
+          prior_cancer_other_than_oral_cavity: false,
           oropharyngeal_lesion_information: '',
           laterality: '',
           size: '',
@@ -213,11 +322,14 @@ const PhysicianQuestionnaire = () => {
           unique_identifier: '',
           images: [],
           primary_treatment_modality: '',
-          disease_status: '',
-          follow_up_period: ''
+          disease_status_at_follow_up: '',
+          time_period_months: ''
         });
         setUploadedPhotos({});
         setImageIds({});
+        
+        // Refresh data to show the new follow-up
+        await fetchPatients(true);
       } else {
         const errorData = await response.json();
         console.error('Failed to add prescription:', errorData);
@@ -479,60 +591,25 @@ const PhysicianQuestionnaire = () => {
               {selectedPatient.physician_questionnaires && selectedPatient.physician_questionnaires.length > 0 ? (
                 <div className="follow-ups-container">
                   {selectedPatient.physician_questionnaires.map((followup, index) => (
-                    <div key={followup.id || index} className="follow-up-card" style={{
-                      backgroundColor: '#f9f9f9',
-                      padding: '15px',
-                      borderRadius: '8px',
-                      marginBottom: '15px',
-                      border: '1px solid #e0e0e0'
-                    }}>
-                      <h4 style={{ marginTop: 0, borderBottom: '1px solid #ddd', paddingBottom: '10px', marginBottom: '15px' }}>
-                        Follow-up #{index + 1}
-                        <span style={{ fontSize: '0.8em', fontWeight: 'normal', float: 'right', color: '#666' }}>
+                    <div
+                      key={followup.id || index}
+                      className="follow-up-card compact"
+                      onClick={() => handleFollowUpClick(followup)}
+                      style={{
+                        backgroundColor: '#f9f9f9',
+                        padding: '15px',
+                        borderRadius: '8px',
+                        marginBottom: '10px',
+                        border: '1px solid #e0e0e0',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h4 style={{ margin: 0 }}>Follow-up #{index + 1}</h4>
+                        <span style={{ fontSize: '0.9em', color: '#666' }}>
                           {followup.created_at ? new Date(followup.created_at).toLocaleString() : 'Date not available'}
                         </span>
-                      </h4>
-                      <div className="details-grid">
-                        <div className="detail-item">
-                          <span className="detail-label">Comorbidities:</span>
-                          <span className="detail-value">{followup.comorbidities || 'None'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Lesion Info:</span>
-                          <span className="detail-value">{followup.oropharyngeal_lesion_information || 'None'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Laterality:</span>
-                          <span className="detail-value">{followup.laterality || 'Not specified'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Size:</span>
-                          <span className="detail-value">{followup.size ? `${followup.size} mm` : 'Not specified'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Clinical Findings:</span>
-                          <span className="detail-value">{followup.clinical_examination_findings || 'None'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Staging:</span>
-                          <span className="detail-value">{followup.staging ? followup.staging.replace('_', ' ').toUpperCase() : 'Not specified'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Histological Type:</span>
-                          <span className="detail-value">{followup.histological_type || 'Not specified'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Grade:</span>
-                          <span className="detail-value">{followup.grade ? followup.grade.replace('_', ' ').toUpperCase() : 'Not specified'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Molecular Analysis:</span>
-                          <span className="detail-value">{followup.molecular_genetic_analysis ? 'Yes' : 'No'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Unique ID:</span>
-                          <span className="detail-value">{followup.unique_identifier || 'None'}</span>
-                        </div>
                       </div>
                     </div>
                   ))}
@@ -562,14 +639,14 @@ const PhysicianQuestionnaire = () => {
                   <strong style={{ display: 'block', marginBottom: '5px', color: '#2c3e50' }}>{category}</strong>
                   <div className="checkbox-grid">
                     {options.map(option => (
-                      <label key={option} className="checkbox-label">
+                      <label key={option.name} className="checkbox-label">
                         <input
                           type="checkbox"
-                          value={option}
-                          checked={prescriptionData.comorbidities ? prescriptionData.comorbidities.split('|').includes(option) : false}
-                          onChange={(e) => handleMultiSelectChange(e, 'comorbidities', '|')}
+                          name={option.name}
+                          checked={prescriptionData[option.name]}
+                          onChange={handlePrescriptionChange}
                         />
-                        {option}
+                        {option.label}
                       </label>
                     ))}
                   </div>
@@ -774,11 +851,11 @@ const PhysicianQuestionnaire = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="disease_status">Disease Status at follow up:</label>
+              <label htmlFor="disease_status_at_follow_up">Disease Status at follow up:</label>
               <select
-                id="disease_status"
-                name="disease_status"
-                value={prescriptionData.disease_status}
+                id="disease_status_at_follow_up"
+                name="disease_status_at_follow_up"
+                value={prescriptionData.disease_status_at_follow_up}
                 onChange={handlePrescriptionChange}
               >
                 <option value="">-- Select Status --</option>
@@ -792,12 +869,12 @@ const PhysicianQuestionnaire = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="follow_up_period">Time period (months):</label>
+              <label htmlFor="time_period_months">Time period (months):</label>
               <input
                 type="number"
-                id="follow_up_period"
-                name="follow_up_period"
-                value={prescriptionData.follow_up_period}
+                id="time_period_months"
+                name="time_period_months"
+                value={prescriptionData.time_period_months}
                 onChange={handlePrescriptionChange}
                 placeholder="Enter months"
               />
@@ -817,6 +894,99 @@ const PhysicianQuestionnaire = () => {
               site={activePhotoPopup}
             />
           )}
+        </div>
+      )}
+      {selectedFollowUp && (
+        <div className="popup-overlay">
+          <div className="popup-container" style={{ maxWidth: '800px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="popup-header">
+              <h3>Follow-up Details</h3>
+              <button className="close-button" onClick={closeFollowUpPopup}>×</button>
+            </div>
+            <div className="popup-content">
+              <div className="details-grid">
+                <div className="detail-item full-width">
+                  <span className="detail-label">Comorbidities:</span>
+                  <div className="detail-value">
+                    {Object.values(comorbiditiesOptions).flat().map(option => {
+                      if (selectedFollowUp[option.name]) {
+                        return <span key={option.name} className="tag">{option.label}</span>;
+                      }
+                      return null;
+                    }).filter(Boolean).length > 0
+                      ? Object.values(comorbiditiesOptions).flat().map(option => {
+                          if (selectedFollowUp[option.name]) {
+                            return <span key={option.name} className="tag" style={{
+                              display: 'inline-block',
+                              backgroundColor: '#e1f5fe',
+                              color: '#0277bd',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              marginRight: '5px',
+                              marginBottom: '5px',
+                              fontSize: '0.9em'
+                            }}>{option.label}</span>;
+                          }
+                          return null;
+                        })
+                      : 'None'
+                    }
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Lesion Info:</span>
+                  <span className="detail-value">{selectedFollowUp.oropharyngeal_lesion_information || 'None'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Laterality:</span>
+                  <span className="detail-value">{selectedFollowUp.laterality || 'Not specified'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Size:</span>
+                  <span className="detail-value">{selectedFollowUp.size ? `${selectedFollowUp.size} mm` : 'Not specified'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Clinical Findings:</span>
+                  <span className="detail-value">{selectedFollowUp.clinical_examination_findings || 'None'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Staging:</span>
+                  <span className="detail-value">{selectedFollowUp.staging ? selectedFollowUp.staging.replace('_', ' ').toUpperCase() : 'Not specified'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Histological Type:</span>
+                  <span className="detail-value">{selectedFollowUp.histological_type || 'Not specified'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Grade:</span>
+                  <span className="detail-value">{selectedFollowUp.grade ? selectedFollowUp.grade.replace('_', ' ').toUpperCase() : 'Not specified'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Molecular Analysis:</span>
+                  <span className="detail-value">{selectedFollowUp.molecular_genetic_analysis ? 'Yes' : 'No'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Unique ID:</span>
+                  <span className="detail-value">{selectedFollowUp.unique_identifier || 'None'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Primary Treatment:</span>
+                  <span className="detail-value">{selectedFollowUp.primary_treatment_modality ? selectedFollowUp.primary_treatment_modality.replace(/_/g, ' ') : 'Not specified'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Disease Status:</span>
+                  <span className="detail-value">{selectedFollowUp.disease_status_at_follow_up ? selectedFollowUp.disease_status_at_follow_up.replace(/_/g, ' ') : 'Not specified'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Time Period:</span>
+                  <span className="detail-value">{selectedFollowUp.time_period_months ? `${selectedFollowUp.time_period_months} months` : 'Not specified'}</span>
+                </div>
+              </div>
+            </div>
+            <div className="popup-footer">
+              <button className="confirm-button" onClick={closeFollowUpPopup}>Close</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
