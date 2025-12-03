@@ -908,13 +908,25 @@ const PhysicianQuestionnaire = () => {
                 <div className="detail-item full-width">
                   <span className="detail-label">Comorbidities:</span>
                   <div className="detail-value">
-                    {Object.values(comorbiditiesOptions).flat().map(option => {
-                      if (selectedFollowUp[option.name]) {
-                        return <span key={option.name} className="tag">{option.label}</span>;
-                      }
-                      return null;
-                    }).filter(Boolean).length > 0
-                      ? Object.values(comorbiditiesOptions).flat().map(option => {
+                    {selectedFollowUp.comorbidities ? (
+                      <span>{selectedFollowUp.comorbidities}</span>
+                    ) : (
+                      Object.values(comorbiditiesOptions).flat().map(option => {
+                        if (selectedFollowUp[option.name]) {
+                          return <span key={option.name} className="tag" style={{
+                            display: 'inline-block',
+                            backgroundColor: '#e1f5fe',
+                            color: '#0277bd',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            marginRight: '5px',
+                            marginBottom: '5px',
+                            fontSize: '0.9em'
+                          }}>{option.label}</span>;
+                        }
+                        return null;
+                      }).filter(Boolean).length > 0 ? 
+                        Object.values(comorbiditiesOptions).flat().map(option => {
                           if (selectedFollowUp[option.name]) {
                             return <span key={option.name} className="tag" style={{
                               display: 'inline-block',
@@ -928,9 +940,8 @@ const PhysicianQuestionnaire = () => {
                             }}>{option.label}</span>;
                           }
                           return null;
-                        })
-                      : 'None'
-                    }
+                        }) : 'None'
+                    )}
                   </div>
                 </div>
                 <div className="detail-item">
