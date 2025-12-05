@@ -31,6 +31,10 @@ function AppContent() {
     setLanguageSelected(true);
   };
 
+  const handleBackToLanguage = () => {
+    setLanguageSelected(false);
+  };
+
   const [existingPatientData, setExistingPatientData] = useState(null);
 
   const handlePatientTypeSelect = (type, data) => {
@@ -49,9 +53,6 @@ function AppContent() {
     <div className="App">
       {(location.pathname === '/physician' || (isAuthenticated && location.pathname === '/patient')) && (
         <nav className="main-nav">
-          {isAuthenticated && location.pathname === '/patient' && (
-            <Link to="/physician" className="back-to-selection">← Back to Physician Details</Link>
-          )}
           {isAuthenticated && (
             <button onClick={handleLogout} className="logout-button">Logout</button>
           )}
@@ -62,10 +63,12 @@ function AppContent() {
         <Route
           path="/patient"
           element={
-            !languageSelected ? (
+            isAuthenticated ? (
+              <Navigate to="/physician" />
+            ) : !languageSelected ? (
               <LanguageSelection onLanguageSelect={handleLanguageSelect} />
             ) : !patientTypeSelected ? (
-              <PatientTypeSelection onPatientTypeSelect={handlePatientTypeSelect} />
+              <PatientTypeSelection onPatientTypeSelect={handlePatientTypeSelect} onBack={handleBackToLanguage} />
             ) : (
               <PatientQuestionnaire
                 initialPatientId={generatedPatientId}

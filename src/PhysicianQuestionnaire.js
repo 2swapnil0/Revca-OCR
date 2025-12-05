@@ -76,22 +76,26 @@ const initialPrescriptionState = {
   hypothyroidism: false,
   hyperthyroidism: false,
   other_general_metabolic: false,
+  other_general_metabolic_text: '',
   hypertension: false,
   coronary_artery_disease: false,
   congestive_heart_failure: false,
   cardiac_arrhythmia: false,
   peripheral_vascular_disease: false,
   other_cardiovascular: false,
+  other_cardiovascular_text: '',
   prior_stroke_transient_ischemic_attack_tia: false,
   dementia_cognitive_impairment: false,
   chronic_obstructive_pulmonary_disease_copd: false,
   asthma: false,
   other_respiratory: false,
+  other_respiratory_text: '',
   chronic_liver_disease_cirrhosis: false,
   peptic_ulcer_disease: false,
   gastroesophageal_reflux_disease_gerd: false,
   chronic_kidney_disease: false,
   other_gi_hepatic_renal: false,
+  other_gi_hepatic_renal_text: '',
   immunosuppression: false,
   autoimmune_disease: false,
   aneamia_or_chronic_hematologic_disorder: false,
@@ -99,9 +103,11 @@ const initialPrescriptionState = {
   prior_cancer_other_than_oral_cavity: false,
   
   oropharyngeal_lesion_information: '',
+  other_oropharyngeal_lesion_information_text: '',
   laterality: '',
   size: '',
   clinical_examination_findings: '',
+  other_clinical_examination_findings_text: '',
   staging: '',
   histological_type: '',
   grade: '',
@@ -109,6 +115,7 @@ const initialPrescriptionState = {
   unique_identifier: '',
   images: [],
   primary_treatment_modality: '',
+  other_primary_treatment_modality_text: '',
   disease_status_at_follow_up: '',
   time_period_months: ''
 };
@@ -517,6 +524,29 @@ const PhysicianQuestionnaire = () => {
         time_period_months: prescriptionData.time_period_months ? Number(prescriptionData.time_period_months) : null,
         images: physicianImageIds,
       };
+
+      // Append "Other" text to the main field if "Other" is selected
+      if (physicianDataToSend.other_general_metabolic && physicianDataToSend.other_general_metabolic_text) {
+        physicianDataToSend.other_general_metabolic = `Other: ${physicianDataToSend.other_general_metabolic_text}`;
+      }
+      if (physicianDataToSend.other_cardiovascular && physicianDataToSend.other_cardiovascular_text) {
+        physicianDataToSend.other_cardiovascular = `Other: ${physicianDataToSend.other_cardiovascular_text}`;
+      }
+      if (physicianDataToSend.other_respiratory && physicianDataToSend.other_respiratory_text) {
+        physicianDataToSend.other_respiratory = `Other: ${physicianDataToSend.other_respiratory_text}`;
+      }
+      if (physicianDataToSend.other_gi_hepatic_renal && physicianDataToSend.other_gi_hepatic_renal_text) {
+        physicianDataToSend.other_gi_hepatic_renal = `Other: ${physicianDataToSend.other_gi_hepatic_renal_text}`;
+      }
+      if (physicianDataToSend.oropharyngeal_lesion_information?.includes('Other') && physicianDataToSend.other_oropharyngeal_lesion_information_text) {
+        physicianDataToSend.oropharyngeal_lesion_information = physicianDataToSend.oropharyngeal_lesion_information.replace('Other', `Other: ${physicianDataToSend.other_oropharyngeal_lesion_information_text}`);
+      }
+      if (physicianDataToSend.clinical_examination_findings?.includes('Other') && physicianDataToSend.other_clinical_examination_findings_text) {
+        physicianDataToSend.clinical_examination_findings = physicianDataToSend.clinical_examination_findings.replace('Other', `Other: ${physicianDataToSend.other_clinical_examination_findings_text}`);
+      }
+      if (physicianDataToSend.primary_treatment_modality === 'other' && physicianDataToSend.other_primary_treatment_modality_text) {
+        physicianDataToSend.primary_treatment_modality = `Other: ${physicianDataToSend.other_primary_treatment_modality_text}`;
+      }
 
       const isUpdate = !!editingQuestionnaireId;
       const url = isUpdate
@@ -972,15 +1002,29 @@ const PhysicianQuestionnaire = () => {
                     <strong style={{ display: 'block', marginBottom: '5px', color: '#2c3e50' }}>{category}</strong>
                     <div className="checkbox-grid">
                       {options.map(option => (
-                        <label key={option.name} className="checkbox-label">
-                          <input
-                            type="checkbox"
-                            name={option.name}
-                            checked={prescriptionData[option.name]}
-                            onChange={handlePrescriptionChange}
-                          />
-                          {option.label}
-                        </label>
+                        <React.Fragment key={option.name}>
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              name={option.name}
+                              checked={!!prescriptionData[option.name]}
+                              onChange={handlePrescriptionChange}
+                            />
+                            {option.label}
+                          </label>
+                          {option.label === 'Other' && prescriptionData[option.name] && (
+                            <div className="form-group" style={{ marginLeft: '20px', marginTop: '5px' }}>
+                              <input
+                                type="text"
+                                name={`${option.name}_text`}
+                                value={prescriptionData[`${option.name}_text`] || ''}
+                                onChange={handlePrescriptionChange}
+                                placeholder="Please specify"
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                          )}
+                        </React.Fragment>
                       ))}
                     </div>
                   </div>
@@ -1069,6 +1113,19 @@ const PhysicianQuestionnaire = () => {
                   </label>
                 ))}
               </div>
+              {prescriptionData.oropharyngeal_lesion_information && prescriptionData.oropharyngeal_lesion_information.split(', ').includes('Other') && (
+                <div className="form-group" style={{ marginTop: '10px' }}>
+                  <label htmlFor="other_oropharyngeal_lesion_information_text">Please specify:</label>
+                  <input
+                    type="text"
+                    id="other_oropharyngeal_lesion_information_text"
+                    name="other_oropharyngeal_lesion_information_text"
+                    value={prescriptionData.other_oropharyngeal_lesion_information_text || ''}
+                    onChange={handlePrescriptionChange}
+                    placeholder="Specify other lesion information"
+                  />
+                </div>
+              )}
             </div>
             
             <div className="form-group">
@@ -1117,6 +1174,19 @@ const PhysicianQuestionnaire = () => {
                   </label>
                 ))}
               </div>
+              {prescriptionData.clinical_examination_findings && prescriptionData.clinical_examination_findings.split(', ').includes('Other') && (
+                <div className="form-group" style={{ marginTop: '10px' }}>
+                  <label htmlFor="other_clinical_examination_findings_text">Please specify:</label>
+                  <input
+                    type="text"
+                    id="other_clinical_examination_findings_text"
+                    name="other_clinical_examination_findings_text"
+                    value={prescriptionData.other_clinical_examination_findings_text || ''}
+                    onChange={handlePrescriptionChange}
+                    placeholder="Specify other findings"
+                  />
+                </div>
+              )}
             </div>
             
             <div className="form-group">
@@ -1235,6 +1305,19 @@ const PhysicianQuestionnaire = () => {
                 <option value="observation">Observation / no treatment</option>
                 <option value="other">Other</option>
               </select>
+              {prescriptionData.primary_treatment_modality === 'other' && (
+                <div className="form-group" style={{ marginTop: '10px' }}>
+                  <label htmlFor="other_primary_treatment_modality_text">Please specify:</label>
+                  <input
+                    type="text"
+                    id="other_primary_treatment_modality_text"
+                    name="other_primary_treatment_modality_text"
+                    value={prescriptionData.other_primary_treatment_modality_text || ''}
+                    onChange={handlePrescriptionChange}
+                    placeholder="Specify other treatment"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="form-group">

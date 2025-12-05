@@ -3,7 +3,7 @@ import { useLanguage } from './LanguageContext';
 import { API_BASE_URL } from './config';
 import './LanguageSelection.css'; // Reusing the same CSS for consistency
 
-const PatientTypeSelection = ({ onPatientTypeSelect }) => {
+const PatientTypeSelection = ({ onPatientTypeSelect, onBack }) => {
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -106,6 +106,9 @@ const handleIdSubmit = async (e) => {
           </button>
           <button onClick={handleExistingPatient} className="language-button">
             {t('existingPatient')}
+          </button>
+          <button onClick={onBack} className="language-button" style={{ backgroundColor: '#95a5a6' }}>
+            {t('back')}
           </button>
         </div>
       )}

@@ -768,6 +768,9 @@ const PatientQuestionnaire = ({ initialPatientId, existingData }) => {
         <div className="form-group">
           <label>{t('alcoholConsumption')}</label>
           <input type="text" name="alcohol_consumption" placeholder={t('alcoholPlaceholder')} value={formData.alcohol_consumption} onChange={handleChange} />
+          <div style={{ fontSize: '0.8rem', color: 'red', marginTop: '5px' }}>
+            One alcohol unit equals half a pint of beer, one small glass of wine, or one shot of spirits.
+          </div>
         </div>
 
         {/* Oral Habits Section */}
