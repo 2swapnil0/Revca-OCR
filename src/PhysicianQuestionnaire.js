@@ -136,6 +136,9 @@ const PhysicianQuestionnaire = () => {
   const [showPatientList, setShowPatientList] = useState(true); // Set to true by default
   const [isLoading, setIsLoading] = useState(true); // Start with loading state
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [patientsPerPage] = useState(10);
+  const [totalPatients, setTotalPatients] = useState(0);
   const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [prescriptionData, setPrescriptionData] = useState(initialPrescriptionState);
@@ -221,16 +224,16 @@ const PhysicianQuestionnaire = () => {
     }
   };
 
-  const fetchPatients = async (preserveSelected = false) => {
+  const fetchPatients = async (page = 1, preserveSelected = false) => {
     setIsLoading(true);
-    // Don't reset showPatientList to false when loading initially
     if (!showPatientList && !preserveSelected) {
       setSelectedPatient(null);
       setShowPrescriptionForm(false);
     }
     const token = localStorage.getItem('token');
+    const skip = (page - 1) * patientsPerPage;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/patient_questionnaire/`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/patient_questionnaire/?skip=${skip}&limit=${patientsPerPage}`, {
         headers: {
           'accept': 'application/json',
           'Authorization': `Token ${token}`,
@@ -238,11 +241,12 @@ const PhysicianQuestionnaire = () => {
       });
       if (response.ok) {
         const responseData = await response.json();
-        // Extract the patients array from the data property
         const patientsArray = responseData.data || [];
         setPatients(patientsArray);
+        setTotalPatients(responseData.total || 0);
+        setCurrentPage(page);
         setShowPatientList(true);
-        
+
         if (preserveSelected && selectedPatient) {
           const updatedPatient = patientsArray.find(p => p.id === selectedPatient.id);
           if (updatedPatient) {
@@ -743,6 +747,10 @@ const PhysicianQuestionnaire = () => {
     </div>
   );
 
+  const paginate = (pageNumber) => {
+    fetchPatients(pageNumber);
+  };
+
   return (
     <div className="questionnaire-container">
      <PhysicianActions onAddNewPatient={handleAddNewPatient} />
@@ -760,8 +768,8 @@ const PhysicianQuestionnaire = () => {
                 onChange={(e) => setPatientIdSearch(e.target.value)}
                 className="search-input"
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="search-button"
               >
                 Search
@@ -795,6 +803,12 @@ const PhysicianQuestionnaire = () => {
               <div className="no-results">No patients found</div>
             )}
           </div>
+          <Pagination
+            patientsPerPage={patientsPerPage}
+            totalPatients={totalPatients}
+            paginate={paginate}
+            currentPage={currentPage}
+          />
         </div>
       )}
       
@@ -1557,6 +1571,43 @@ const PhysicianQuestionnaire = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const Pagination = ({ patientsPerPage, totalPatients, paginate, currentPage }) => {
+  const pageNumbers = [];
+  const totalPages = Math.ceil(totalPatients / patientsPerPage);
+
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  return (
+    <nav>
+      <ul className="pagination">
+        {currentPage > 1 && (
+          <li className="page-item">
+            <a onClick={() => paginate(currentPage - 1)} href="#!" className="page-link">
+              Previous
+            </a>
+          </li>
+        )}
+        {pageNumbers.map(number => (
+          <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+            <a onClick={() => paginate(number)} href="#!" className="page-link">
+              {number}
+            </a>
+          </li>
+        ))}
+        {currentPage < totalPages && (
+          <li className="page-item">
+            <a onClick={() => paginate(currentPage + 1)} href="#!" className="page-link">
+              Next
+            </a>
+          </li>
+        )}
+      </ul>
+    </nav>
   );
 };
 
