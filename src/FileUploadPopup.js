@@ -195,14 +195,18 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
                         <div
                           key={tag}
                           className="selected-tag"
-                          title="Click to remove"
-                          onClick={() => {
-                            setSelectedTags(selectedTags.filter(t => t !== tag));
-                            const [label, value] = Object.entries(siteTranslationMap).find(([l, v]) => v === tag);
-                            setAvailableTags([...availableTags, [label, value]].sort((a, b) => a[0].localeCompare(b[0])));
-                          }}
                         >
-                          <span>{tag}</span>
+                          <span>{Object.keys(siteTranslationMap).find(key => siteTranslationMap[key] === tag)}</span>
+                          <span
+                            className="remove-tag"
+                            onClick={() => {
+                              setSelectedTags(selectedTags.filter(t => t !== tag));
+                              const [label, value] = Object.entries(siteTranslationMap).find(([l, v]) => v === tag);
+                              setAvailableTags([...availableTags, [label, value]].sort((a, b) => a[0].localeCompare(b[0])));
+                            }}
+                          >
+                            ×
+                          </span>
                         </div>
                       ))}
                     </div>

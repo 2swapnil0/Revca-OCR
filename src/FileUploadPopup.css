@@ -364,3 +364,15 @@
   background-color: #d0d0d0;
   color: #000;
 }
+
+.remove-tag {
+  margin-left: 8px;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.remove-tag:hover {
+  color: #333;
+}
