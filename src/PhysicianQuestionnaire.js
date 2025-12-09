@@ -550,14 +550,14 @@ const PhysicianQuestionnaire = () => {
     }
   };
 
-  const fetchAndViewImage = async (imageId, tag) => {
+  const fetchAndViewImage = async (imageId, tag, site) => {
     setLoadingImageId(imageId);
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/image/${imageId}`);
       if (response.ok) {
         const imageBlob = await response.blob();
         const imageUrl = URL.createObjectURL(imageBlob);
-        setCurrentImage({ url: imageUrl, tag: tag });
+        setCurrentImage({ url: imageUrl, tag: tag, site: site });
         setImageViewerOpen(true);
       } else {
         console.error('Failed to fetch image');
@@ -585,11 +585,17 @@ const PhysicianQuestionnaire = () => {
       <div className="popup-overlay" style={{ zIndex: 1001 }}>
         <div className="popup-container image-viewer-container">
           <div className="popup-header">
-            <h3>{currentImage.tag}</h3>
+            <h3>{currentImage.site}</h3>
             <button className="close-button" onClick={closeImageViewer}>×</button>
           </div>
           <div className="popup-content">
             <img src={currentImage.url} alt={currentImage.tag} className="image-preview" />
+            <div className="image-viewer-tags">
+              <label>Tags:</label>
+              {currentImage.tag.split(',').map(tag => (
+                <span key={tag} className="tag">{tag}</span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -1537,7 +1543,7 @@ const PhysicianQuestionnaire = () => {
                   <button
                     type="button"
                     className="file-view-button"
-                    onClick={() => fetchAndViewImage(photo.id, photo.tag)}
+                    onClick={() => fetchAndViewImage(photo.id, photo.tag, photo.site)}
                     disabled={loadingImageId === photo.id}
                   >
                     {loadingImageId === photo.id ? 'Loading...' : `View (${photo.tag})`}

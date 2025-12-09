@@ -21,7 +21,8 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [note, setNote] = useState(initialNote);
-  const [selectedTag, setSelectedTag] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [availableTags, setAvailableTags] = useState(Object.entries(siteTranslationMap));
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -66,14 +67,14 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
 
   const handleUpload = async () => {
     if (selectedFile) {
-      if (!selectedTag) {
-        alert('Please select an anatomical site.');
+      if (selectedTags.length === 0) {
+        alert('Please select at least one anatomical site.');
         return;
       }
       setIsUploading(true);
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('tag', selectedTag);
+      formData.append('tag', selectedTags.join(','));
       formData.append('site', site);
       if (note) {
         formData.append('note', note);
@@ -168,19 +169,42 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
                 />
               </div>
               <div className="note-input-container">
-                <label htmlFor="image-tag">Anatomical Site:</label>
+                <label htmlFor="image-tag">Anatomical Site(s):</label>
                 <select
                   id="image-tag"
-                  value={selectedTag}
-                  onChange={(e) => setSelectedTag(e.target.value)}
+                  value=""
+                  onChange={(e) => {
+                    const newTag = e.target.value;
+                    if (newTag && !selectedTags.includes(newTag)) {
+                      setSelectedTags([...selectedTags, newTag]);
+                      setAvailableTags(availableTags.filter(([label, value]) => value !== newTag));
+                    }
+                  }}
                   className="image-tag-select"
-                  required
                 >
-                  <option value="" disabled>-- Select a site --</option>
-                  {Object.entries(siteTranslationMap).map(([label, value]) => (
+                  <option value="" disabled>-- Add a site --</option>
+                  {availableTags.map(([label, value]) => (
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
+                <div className="selected-tags">
+                  {selectedTags.map(tag => (
+                    <div key={tag} className="selected-tag">
+                      <span>{Object.keys(siteTranslationMap).find(key => siteTranslationMap[key] === tag)}</span>
+                      <button
+                        type="button"
+                        className="remove-tag-button"
+                        onClick={() => {
+                          setSelectedTags(selectedTags.filter(t => t !== tag));
+                          const [label, value] = Object.entries(siteTranslationMap).find(([l, v]) => v === tag);
+                          setAvailableTags([...availableTags, [label, value]].sort((a, b) => a[0].localeCompare(b[0])));
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

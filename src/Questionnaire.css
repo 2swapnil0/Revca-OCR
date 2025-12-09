@@ -635,6 +635,12 @@
 .button-group {
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.button-group > button {
+  flex: 1;
+  min-width: 0; /* Allow buttons to shrink */
 }
 
 .file-view-button {
@@ -749,4 +755,27 @@
 
 .page-link:hover {
   background-color: #f2f2f2;
+}
+
+.image-viewer-tags {
+  margin-top: 15px;
+}
+
+.image-viewer-tags label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.image-viewer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tag {
+  background-color: #e0e0e0;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 0.9rem;
 }
