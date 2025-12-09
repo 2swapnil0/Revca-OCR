@@ -970,6 +970,7 @@ const PatientQuestionnaire = ({ initialPatientId, existingData }) => {
               onFileSelect={handlePhotoSelect}
               site={activePhotoPopup}
               initialNote={imageNotes[activePhotoPopup] || ''}
+              userType='patient'
             />
           )}
           

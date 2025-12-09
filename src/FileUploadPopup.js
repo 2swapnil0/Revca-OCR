@@ -17,7 +17,7 @@ const siteTranslationMap = {
   "Back of Throat": "backOfThroat"
 };
 
-const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = '' }) => {
+const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = '', userType = 'physician' }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [note, setNote] = useState(initialNote);
@@ -67,14 +67,15 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
 
   const handleUpload = async () => {
     if (selectedFile) {
-      if (selectedTags.length === 0) {
+      if (userType === 'physician' && selectedTags.length === 0) {
         alert('Please select at least one anatomical site.');
         return;
       }
       setIsUploading(true);
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('tag', selectedTags.join(','));
+      const tag = userType === 'physician' ? selectedTags.join(',') : site;
+      formData.append('tag', tag);
       formData.append('site', site);
       if (note) {
         formData.append('note', note);
@@ -168,51 +169,53 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
                   className="image-note-textarea"
                 />
               </div>
-              <div className="note-input-container">
-                <label htmlFor="image-tag">Anatomical Site(s):</label>
-                <select
-                  id="image-tag"
-                  value=""
-                  onChange={(e) => {
-                    const newTag = e.target.value;
-                    if (newTag && !selectedTags.includes(newTag)) {
-                      setSelectedTags([...selectedTags, newTag]);
-                      setAvailableTags(availableTags.filter(([label, value]) => value !== newTag));
-                    }
-                  }}
-                  className="image-tag-select"
-                >
-                  <option value="" disabled>-- Add a site --</option>
-                  {availableTags.map(([label, value]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-                {selectedTags.length > 0 && (
-                  <div className="selected-tags-container">
-                    <span className="tags-label">Tags:</span>
-                    <div className="selected-tags">
-                      {selectedTags.map(tag => (
-                        <div
-                          key={tag}
-                          className="selected-tag"
-                        >
-                          <span>{Object.keys(siteTranslationMap).find(key => siteTranslationMap[key] === tag)}</span>
-                          <span
-                            className="remove-tag"
-                            onClick={() => {
-                              setSelectedTags(selectedTags.filter(t => t !== tag));
-                              const [label, value] = Object.entries(siteTranslationMap).find(([l, v]) => v === tag);
-                              setAvailableTags([...availableTags, [label, value]].sort((a, b) => a[0].localeCompare(b[0])));
-                            }}
+              {userType === 'physician' && (
+                <div className="note-input-container">
+                  <label htmlFor="image-tag">Anatomical Site(s):</label>
+                  <select
+                    id="image-tag"
+                    value=""
+                    onChange={(e) => {
+                      const newTag = e.target.value;
+                      if (newTag && !selectedTags.includes(newTag)) {
+                        setSelectedTags([...selectedTags, newTag]);
+                        setAvailableTags(availableTags.filter(([label, value]) => value !== newTag));
+                      }
+                    }}
+                    className="image-tag-select"
+                  >
+                    <option value="" disabled>-- Add a site --</option>
+                    {availableTags.map(([label, value]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                  {selectedTags.length > 0 && (
+                    <div className="selected-tags-container">
+                      <span className="tags-label">Tags:</span>
+                      <div className="selected-tags">
+                        {selectedTags.map(tag => (
+                          <div
+                            key={tag}
+                            className="selected-tag"
                           >
-                            ×
-                          </span>
-                        </div>
-                      ))}
+                            <span>{Object.keys(siteTranslationMap).find(key => siteTranslationMap[key] === tag)}</span>
+                            <span
+                              className="remove-tag"
+                              onClick={() => {
+                                setSelectedTags(selectedTags.filter(t => t !== tag));
+                                const [label, value] = Object.entries(siteTranslationMap).find(([l, v]) => v === tag);
+                                setAvailableTags([...availableTags, [label, value]].sort((a, b) => a[0].localeCompare(b[0])));
+                              }}
+                            >
+                              ×
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
