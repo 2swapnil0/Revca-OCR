@@ -115,21 +115,6 @@ const initialPrescriptionState = {
   time_period_months: ''
 };
 
-const photoSites = [
-    { key: "Upper Lip", label: 'Upper Lip' },
-    { key: "Lower Lip", label: 'Lower Lip' },
-    { key: "Left Cheeks (Inside)", label: 'Left Cheeks (Inside)' },
-    { key: "Right Cheeks (Inside)", label: 'Right Cheeks (Inside)' },
-    { key: "Tongue Top", label: 'Tongue Top' },
-    { key: "Tongue Back", label: 'Tongue Back' },
-    { key: "Left Side Tongue", label: 'Left Side Tongue' },
-    { key: "Right Side Tongue", label: 'Right Side Tongue' },
-    { key: "Roof of Mouth", label: 'Roof of Mouth' },
-    { key: "Bottom of Mouth", label: 'Bottom of Mouth' },
-    { key: "Gums", label: 'Gums' },
-    { key: "Back of Throat", label: 'Back of Throat' }
-  ];
-
 const PhysicianQuestionnaire = () => {
   const [patients, setPatients] = useState([]);
   const [patientIdSearch, setPatientIdSearch] = useState('');
@@ -282,14 +267,6 @@ const PhysicianQuestionnaire = () => {
         const imageIds = {};
         const uploadedPhotos = {};
 
-        // First, populate with the patient's own images
-        data.images?.forEach(img => {
-          if (img.tag) {
-            imageIds[img.tag] = img.id;
-            uploadedPhotos[img.tag] = true;
-          }
-        });
-
         if (todaysQuestionnaire) {
           // Then, merge images from today's questionnaire, overwriting if necessary
           todaysQuestionnaire.images?.forEach(img => {
@@ -361,14 +338,6 @@ const PhysicianQuestionnaire = () => {
 
         const imageIds = {};
         const uploadedPhotos = {};
-
-        // First, populate with the patient's own images
-        data.images?.forEach(img => {
-          if (img.tag) {
-            imageIds[img.tag] = img.id;
-            uploadedPhotos[img.tag] = true;
-          }
-        });
 
         if (todaysQuestionnaire) {
           // Then, merge images from today's questionnaire, overwriting if necessary
@@ -489,35 +458,10 @@ const PhysicianQuestionnaire = () => {
     setIsLoading(true);
 
     const token = localStorage.getItem('token');
-    const patientPhotoKeys = photoSites.map(site => site.key);
     
-    const patientImageIds = [];
-    const physicianImageIds = [];
-
-    for (const key in imageIds) {
-      if (patientPhotoKeys.includes(key)) {
-        patientImageIds.push(imageIds[key]);
-      } else {
-        physicianImageIds.push(imageIds[key]);
-      }
-    }
+    const physicianImageIds = Object.values(imageIds);
 
     try {
-      // API Call 1: Update patient's images
-      const patientUpdateResponse = await fetch(`${API_BASE_URL}/api/v1/patient_questionnaire/${selectedPatient.id}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`,
-        },
-        body: JSON.stringify({ images: patientImageIds }),
-      });
-
-      if (!patientUpdateResponse.ok) {
-        const errorData = await patientUpdateResponse.json();
-        throw new Error(`Failed to update patient images: ${JSON.stringify(errorData)}`);
-      }
-
       // API Call 2: Submit physician questionnaire
       const physicianDataToSend = {
         ...prescriptionData,
@@ -1040,36 +984,6 @@ const PhysicianQuestionnaire = () => {
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="form-group">
-                <label>Patient Photographs:</label>
-                <div className="multi-input-group">
-                  {photoSites.map(site => (
-                    <div key={site.key} className="file-input-container">
-                      <label>{site.label}:</label>
-                      <div className="button-group">
-                        {uploadedPhotos[site.key] && imageIds[site.key] && (
-                          <button
-                            type="button"
-                            className="file-view-button"
-                            onClick={() => fetchAndViewImage(imageIds[site.key], site.key)}
-                            disabled={loadingImageId === imageIds[site.key]}
-                          >
-                            {loadingImageId === imageIds[site.key] ? 'Loading...' : 'View'}
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          className="file-upload-button"
-                          onClick={() => openPhotoPopup(site.key)}
-                        >
-                          {uploadedPhotos[site.key] ? 'Change Photo' : 'Add Photo'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div className="form-group">
