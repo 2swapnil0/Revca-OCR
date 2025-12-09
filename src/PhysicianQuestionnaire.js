@@ -130,8 +130,9 @@ const PhysicianQuestionnaire = () => {
   const [editingQuestionnaireId, setEditingQuestionnaireId] = useState(null);
   
   const [activePhotoPopup, setActivePhotoPopup] = useState(null);
-  const [uploadedPhotos, setUploadedPhotos] = useState({});
-  const [imageIds, setImageIds] = useState({});
+  const [uploadedPhotos, setUploadedPhotos] = useState({}); // Tracks which sites have photos
+  const [imageIds, setImageIds] = useState({}); // Stores { [compositeTag]: id }
+  const [sitePhotos, setSitePhotos] = useState({}); // Stores { [site]: [{ id, tag, note }] }
   const [selectedFollowUp, setSelectedFollowUp] = useState(null);
   const [activeTab, setActiveTab] = useState('personalInfo');
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -266,16 +267,29 @@ const PhysicianQuestionnaire = () => {
         
         const imageIds = {};
         const uploadedPhotos = {};
+        const sitePhotos = {};
+
+        const processImage = (img) => {
+            if (img.site && img.tag) {
+                const site = img.site;
+                if (!sitePhotos[site]) {
+                    sitePhotos[site] = [];
+                }
+                // Avoid duplicates by checking ID
+                if (!sitePhotos[site].some(p => p.id === img.id)) {
+                    sitePhotos[site].push({ id: img.id, tag: img.tag, note: img.note, site: img.site });
+                }
+                imageIds[img.id] = img.id;
+                uploadedPhotos[site] = true;
+            }
+        };
+
+        // Combine images from patient and questionnaire, ensuring uniqueness
+        const allImages = [...(data.images || []), ...(todaysQuestionnaire?.images || [])];
+        const uniqueImages = Array.from(new Map(allImages.map(item => [item.id, item])).values());
+        uniqueImages.forEach(processImage);
 
         if (todaysQuestionnaire) {
-          // Then, merge images from today's questionnaire, overwriting if necessary
-          todaysQuestionnaire.images?.forEach(img => {
-            if (img.tag) {
-              imageIds[img.tag] = img.id;
-              uploadedPhotos[img.tag] = true;
-            }
-          });
-
           const processedQuestionnaire = processQuestionnaireData(todaysQuestionnaire);
           setPrescriptionData({
             ...initialPrescriptionState,
@@ -298,6 +312,7 @@ const PhysicianQuestionnaire = () => {
 
         setImageIds(imageIds);
         setUploadedPhotos(uploadedPhotos);
+        setSitePhotos(sitePhotos);
 
         setShowPrescriptionForm(true); // Show tabs immediately
         setActiveTab('personalInfo'); // Default to personal info
@@ -338,16 +353,29 @@ const PhysicianQuestionnaire = () => {
 
         const imageIds = {};
         const uploadedPhotos = {};
+        const sitePhotos = {};
+
+        const processImage = (img) => {
+            if (img.site && img.tag) {
+                const site = img.site;
+                if (!sitePhotos[site]) {
+                    sitePhotos[site] = [];
+                }
+                // Avoid duplicates by checking ID
+                if (!sitePhotos[site].some(p => p.id === img.id)) {
+                    sitePhotos[site].push({ id: img.id, tag: img.tag, note: img.note, site: img.site });
+                }
+                imageIds[img.id] = img.id;
+                uploadedPhotos[site] = true;
+            }
+        };
+
+        // Combine images from patient and questionnaire, ensuring uniqueness
+        const allImages = [...(data.images || []), ...(todaysQuestionnaire?.images || [])];
+        const uniqueImages = Array.from(new Map(allImages.map(item => [item.id, item])).values());
+        uniqueImages.forEach(processImage);
 
         if (todaysQuestionnaire) {
-          // Then, merge images from today's questionnaire, overwriting if necessary
-          todaysQuestionnaire.images?.forEach(img => {
-            if (img.tag) {
-              imageIds[img.tag] = img.id;
-              uploadedPhotos[img.tag] = true;
-            }
-          });
-
           const processedQuestionnaire = processQuestionnaireData(todaysQuestionnaire);
           setPrescriptionData({
             ...initialPrescriptionState,
@@ -370,6 +398,7 @@ const PhysicianQuestionnaire = () => {
  
         setImageIds(imageIds);
         setUploadedPhotos(uploadedPhotos);
+        setSitePhotos(sitePhotos);
 
         setShowPatientList(false);
         setShowPrescriptionForm(true);
@@ -434,15 +463,21 @@ const PhysicianQuestionnaire = () => {
     setActivePhotoPopup(null);
   };
 
-  const handlePhotoSelect = (result, file, site) => {
-    setImageIds(prevIds => ({
-      ...prevIds,
-      [site]: result.id
-    }));
-    setUploadedPhotos(prevPhotos => ({
-      ...prevPhotos,
-      [site]: true
-    }));
+  const handlePhotoSelect = (result, file, site, note) => {
+    const newPhoto = { id: result.id, tag: result.tag, note: note, site: site };
+    const photoSite = site;
+
+    setSitePhotos(prev => {
+      const updatedSitePhotos = { ...prev };
+      if (!updatedSitePhotos[photoSite]) {
+        updatedSitePhotos[photoSite] = [];
+      }
+      updatedSitePhotos[photoSite].push(newPhoto);
+      return updatedSitePhotos;
+    });
+
+    setImageIds(prev => ({ ...prev, [result.id]: result.id }));
+    setUploadedPhotos(prev => ({ ...prev, [photoSite]: true }));
   };
 
   const handleFollowUpClick = (followup) => {
@@ -501,6 +536,7 @@ const PhysicianQuestionnaire = () => {
       alert(`Prescription ${isUpdate ? 'updated' : 'added'} successfully!`);
       setUploadedPhotos({});
       setImageIds({});
+      setSitePhotos({});
       await handlePatientClick(selectedPatient);
 
     } catch (error) {
@@ -995,22 +1031,23 @@ const PhysicianQuestionnaire = () => {
                    <div key={site} className="file-input-container">
                      <label>Site {num}:</label>
                      <div className="button-group">
-                       {uploadedPhotos[site] && imageIds[site] && (
+                       {sitePhotos[site] && sitePhotos[site].map(photo => (
                          <button
+                           key={photo.id}
                            type="button"
                            className="file-view-button"
-                           onClick={() => fetchAndViewImage(imageIds[site], site)}
-                           disabled={loadingImageId === imageIds[site]}
+                           onClick={() => fetchAndViewImage(photo.id, photo.tag)}
+                           disabled={loadingImageId === photo.id}
                          >
-                           {loadingImageId === imageIds[site] ? 'Loading...' : 'View'}
+                           {loadingImageId === photo.id ? 'Loading...' : `View (${photo.tag})`}
                          </button>
-                       )}
+                       ))}
                        <button
                          type="button"
                          className="file-upload-button"
                          onClick={() => openPhotoPopup(site)}
                        >
-                         {uploadedPhotos[site] ? 'Change Photo' : 'Upload Photo'}
+                         Add Photo
                        </button>
                      </div>
                    </div>

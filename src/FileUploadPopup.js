@@ -2,10 +2,26 @@ import React, { useState, useRef } from 'react';
 import './FileUploadPopup.css';
 import { API_BASE_URL } from './config';
 
+const siteTranslationMap = {
+  "Upper Lip": "upperLip",
+  "Lower Lip": "lowerLip",
+  "Left Cheeks (Inside)": "leftCheek",
+  "Right Cheeks (Inside)": "rightCheek",
+  "Tongue Top": "tongueTop",
+  "Tongue Back": "tongueBack",
+  "Left Side Tongue": "leftSideTongue",
+  "Right Side Tongue": "rightSideTongue",
+  "Roof of Mouth": "roofOfMouth",
+  "Bottom of Mouth": "bottomOfMouth",
+  "Gums": "gums",
+  "Back of Throat": "backOfThroat"
+};
+
 const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = '' }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [note, setNote] = useState(initialNote);
+  const [selectedTag, setSelectedTag] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -50,10 +66,15 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
 
   const handleUpload = async () => {
     if (selectedFile) {
+      if (!selectedTag) {
+        alert('Please select an anatomical site.');
+        return;
+      }
       setIsUploading(true);
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('tag', site);
+      formData.append('tag', selectedTag);
+      formData.append('site', site);
       if (note) {
         formData.append('note', note);
       }
@@ -145,6 +166,21 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
                   placeholder="Add a note about this image..."
                   className="image-note-textarea"
                 />
+              </div>
+              <div className="note-input-container">
+                <label htmlFor="image-tag">Anatomical Site:</label>
+                <select
+                  id="image-tag"
+                  value={selectedTag}
+                  onChange={(e) => setSelectedTag(e.target.value)}
+                  className="image-tag-select"
+                  required
+                >
+                  <option value="" disabled>-- Select a site --</option>
+                  {Object.entries(siteTranslationMap).map(([label, value]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
               </div>
             </div>
           )}
