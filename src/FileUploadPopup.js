@@ -187,24 +187,27 @@ const FileUploadPopup = ({ isOpen, onClose, onFileSelect, site, initialNote = ''
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
-                <div className="selected-tags">
-                  {selectedTags.map(tag => (
-                    <div key={tag} className="selected-tag">
-                      <span>{Object.keys(siteTranslationMap).find(key => siteTranslationMap[key] === tag)}</span>
-                      <button
-                        type="button"
-                        className="remove-tag-button"
-                        onClick={() => {
-                          setSelectedTags(selectedTags.filter(t => t !== tag));
-                          const [label, value] = Object.entries(siteTranslationMap).find(([l, v]) => v === tag);
-                          setAvailableTags([...availableTags, [label, value]].sort((a, b) => a[0].localeCompare(b[0])));
-                        }}
-                      >
-                        ×
-                      </button>
+                {selectedTags.length > 0 && (
+                  <div className="selected-tags-container">
+                    <span className="tags-label">Tags:</span>
+                    <div className="selected-tags">
+                      {selectedTags.map(tag => (
+                        <div
+                          key={tag}
+                          className="selected-tag"
+                          title="Click to remove"
+                          onClick={() => {
+                            setSelectedTags(selectedTags.filter(t => t !== tag));
+                            const [label, value] = Object.entries(siteTranslationMap).find(([l, v]) => v === tag);
+                            setAvailableTags([...availableTags, [label, value]].sort((a, b) => a[0].localeCompare(b[0])));
+                          }}
+                        >
+                          <span>{tag}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
