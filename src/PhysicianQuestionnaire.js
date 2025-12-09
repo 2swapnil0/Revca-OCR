@@ -143,6 +143,9 @@ const PhysicianQuestionnaire = () => {
   const [newFollowupMessage, setNewFollowupMessage] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [newlyCreatedPatient, setNewlyCreatedPatient] = useState(null);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [currentPhotos, setCurrentPhotos] = useState([]);
+
   const navigate = useNavigate();
   const location = useLocation();
   const handleAddNewPatient = async () => {
@@ -579,7 +582,7 @@ const PhysicianQuestionnaire = () => {
   const ImageViewer = () => {
     if (!imageViewerOpen || !currentImage) return null;
     return (
-      <div className="popup-overlay">
+      <div className="popup-overlay" style={{ zIndex: 1001 }}>
         <div className="popup-container image-viewer-container">
           <div className="popup-header">
             <h3>{currentImage.tag}</h3>
@@ -1031,17 +1034,18 @@ const PhysicianQuestionnaire = () => {
                    <div key={site} className="file-input-container">
                      <label>Site {num}:</label>
                      <div className="button-group">
-                       {sitePhotos[site] && sitePhotos[site].map(photo => (
+                       {sitePhotos[site] && sitePhotos[site].length > 0 && (
                          <button
-                           key={photo.id}
                            type="button"
                            className="file-view-button"
-                           onClick={() => fetchAndViewImage(photo.id, photo.tag)}
-                           disabled={loadingImageId === photo.id}
+                           onClick={() => {
+                             setCurrentPhotos(sitePhotos[site]);
+                             setGalleryOpen(true);
+                           }}
                          >
-                           {loadingImageId === photo.id ? 'Loading...' : `View (${photo.tag})`}
+                           View Photos ({sitePhotos[site].length})
                          </button>
-                       ))}
+                       )}
                        <button
                          type="button"
                          className="file-upload-button"
@@ -1515,6 +1519,31 @@ const PhysicianQuestionnaire = () => {
               <button className="confirm-button" onClick={handleCloseSuccessPopup}>
                 Continue
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {galleryOpen && (
+        <div className="popup-overlay">
+          <div className="popup-container image-gallery-container">
+            <div className="popup-header">
+              <h3>Photo Gallery</h3>
+              <button className="close-button" onClick={() => setGalleryOpen(false)}>×</button>
+            </div>
+            <div className="popup-content">
+              {currentPhotos.map(photo => (
+                <div key={photo.id} className="gallery-item">
+                  <button
+                    type="button"
+                    className="file-view-button"
+                    onClick={() => fetchAndViewImage(photo.id, photo.tag)}
+                    disabled={loadingImageId === photo.id}
+                  >
+                    {loadingImageId === photo.id ? 'Loading...' : `View (${photo.tag})`}
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </div>
